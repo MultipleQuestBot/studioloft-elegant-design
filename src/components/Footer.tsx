@@ -1,7 +1,7 @@
-import { Instagram, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {ContactInfo} from "@/components/ContactInfo";
 
 const Footer = () => {
   return (
@@ -9,23 +9,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Contact Info */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">Контакты</h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Phone className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">+7 (999) 123-45-67</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">hello@studioloft.ru</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Instagram className="h-5 w-5 text-primary" />
-                <span className="text-muted-foreground">@studioloft_design</span>
-              </div>
-            </div>
-          </div>
+          <ContactInfo/>
 
           {/* Quick Contact */}
           <div>
@@ -51,7 +35,7 @@ const Footer = () => {
 
         <div className="border-t border-border mt-8 pt-8 text-center">
           <p className="text-muted-foreground text-sm">
-            © 2024 studioloft. Все права защищены.
+            © 2026 studioloft. Все права защищены.
           </p>
         </div>
       </div>

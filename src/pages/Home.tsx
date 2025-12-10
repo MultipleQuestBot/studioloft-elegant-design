@@ -80,7 +80,7 @@ const Home = () => {
             <Button variant="hero" size="lg" className="text-lg px-8 py-3">
               Начать проект
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-black">
+            <Button variant="outline" size="lg" className="text-lg px-8 py-3 border-white text-black hover:bg-white hover:text-gray-500">
               Посмотреть работы
             </Button>
           </div>

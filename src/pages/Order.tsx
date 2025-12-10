@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Star, Phone, Mail } from "lucide-react";
+import { ContactInfo } from "@/components/ContactInfo";
 
 const Order = () => {
   const packageFeatures = [
@@ -201,13 +202,6 @@ const Order = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="consent" />
-                    <Label htmlFor="consent" className="text-sm text-muted-foreground">
-                      Согласен на обработку персональных данных
-                    </Label>
-                  </div>
-
                   <Button type="submit" className="w-full" size="lg">
                     Отправить заявку
                   </Button>
@@ -218,22 +212,7 @@ const Order = () => {
             {/* Contact Info */}
             <Card className="mt-6 shadow-soft">
               <CardContent className="p-6">
-                <h3 className="font-semibold text-foreground mb-4">
-                  Или свяжитесь с нами напрямую
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Phone className="h-5 w-5 text-primary" />
-                    <span className="text-foreground">+7 (999) 123-45-67</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-primary" />
-                    <span className="text-foreground">hello@studioloft.ru</span>
-                  </div>
-                </div>
-                <p className="text-muted-foreground text-sm mt-4">
-                  Работаем ежедневно с 9:00 до 21:00
-                </p>
+                <ContactInfo/>
               </CardContent>
             </Card>
           </div>
