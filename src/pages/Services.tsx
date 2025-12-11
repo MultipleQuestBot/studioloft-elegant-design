@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Palette, Hammer, Clock, CheckCircle, Users, Award } from "lucide-react";
+import { Palette, Hammer, Clock, CheckCircle, Users, Award, ScanEye} from "lucide-react";
 
 const Services = () => {
   const designSteps = [
@@ -19,6 +19,14 @@ const Services = () => {
     "Инженерные системы (электрика, сантехника)",
     "Чистовая отделка стен, потолков, полов",
     "Установка мебели и финишный декор"
+  ];
+
+  const supervisionSteps = ["Передача проекта и согласование", 
+    "Проверка сметы", 
+    "Разметка («обнос»)",
+    "Контроль общестроительных работ",
+    "Контроль закупки материалов",
+    "Передача исполнительной документации"
   ];
 
   return (
@@ -193,7 +201,84 @@ const Services = () => {
             </CardContent>
           </Card>
         </div>
+        {/* Supervision Service */}
+        <div className="mt-20" >
+          <Card className="shadow-elegant overflow-hidden">
+            <CardHeader className="bg-muted/50 p-8">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <ScanEye className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-3xl font-display text-foreground">
+                    Авторский надзор
+                  </CardTitle>
+                  <p className="text-muted-foreground text-lg">
+                    Проследим, чтобы всё было выполнено согласно проекту
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">
+                    Этапы надзора
+                  </h3>
+                  <div className="space-y-4">
+                    {renovationSteps.map((step, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-secondary/10 text-secondary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="text-foreground font-medium">{step}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
+                <div>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">
+                    Преимущества
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <span className="text-muted-foreground">Регулярные выезды (обычно 1-2 раза в неделю)</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <span className="text-muted-foreground">Внеплановые выезды</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <span className="text-muted-foreground">Удаленная поддержка</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-5 w-5 text-primary" />
+                      <span className="text-muted-foreground">Постоянная коммуникация с заказчиком </span>
+                    </div>
+                  </div>
+
+                  <Separator className="my-6" />
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <Badge variant="secondary">2-6 месяцев</Badge>
+                    <Badge variant="secondary">От 15000 ₽/м²</Badge>
+                    <Badge variant="secondary">Гарантия 2 года</Badge>
+                  </div>
+
+                  <Button variant="default" size="lg" className="w-full">
+                    Заказать надзор
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         {/* CTA Section */}
         <div className="mt-20 text-center bg-gradient-hero p-12 rounded-lg">
           <h2 className="text-3xl font-display font-semibold text-foreground mb-4">

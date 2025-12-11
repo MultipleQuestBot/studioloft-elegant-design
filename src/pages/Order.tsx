@@ -7,8 +7,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Star, Phone, Mail } from "lucide-react";
 import { ContactInfo } from "@/components/ContactInfo";
+import { useEffect, useState } from "react";
+import config from "@/ApiConfig";
+
 
 const Order = () => {
+  const [cards, setCards] = useState([]);
+  const fetchCards = async () => {
+      const res = await fetch(`${config.backendPath}/portfolio/random?limit=10`);
+      const data = await res.json();
+      setCards(data);
+  };
+
+  useEffect(() => {
+      fetchCards();
+  }, []);
+
   const packageFeatures = [
     "Планировочное решение",
     "3D-визуализация всех помещений",
@@ -18,24 +32,6 @@ const Order = () => {
     "Декор и аксессуары",
     "Рабочие чертежи",
     "Авторский надзор"
-  ];
-
-  const completedProjects = [
-    {
-      title: "Квартира 65 м² в ЖК «Северный»",
-      result: "Светлая скандинавская квартира с функциональным зонированием",
-      image: "/placeholder.svg"
-    },
-    {
-      title: "Дом 150 м² в поселке «Лесной»",
-      result: "Современный интерьер с камином и панорамными окнами",
-      image: "/placeholder.svg"
-    },
-    {
-      title: "Студия 40 м² в центре города",
-      result: "Максимально функциональное пространство для молодой пары",
-      image: "/placeholder.svg"
-    }
   ];
 
   return (
@@ -81,7 +77,7 @@ const Order = () => {
                 Примеры реализованных решений
               </h3>
               <div className="space-y-6">
-                {completedProjects.map((project, index) => (
+                {cards.map((project, index) => (
                   <Card key={index} className="shadow-soft">
                     <CardContent className="p-6">
                       <div className="flex items-start space-x-4">
