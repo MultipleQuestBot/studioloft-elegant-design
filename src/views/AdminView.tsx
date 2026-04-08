@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,12 +10,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, Plus, Image as ImageIcon, FileText, Phone } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 const Admin = () => {
+  const router = useRouter();
   const [uploadStep, setUploadStep] = useState<'form' | 'success'>('form');
+  const [description, setDescription] = useState("");
+  const [descriptionMode, setDescriptionMode] = useState<"edit" | "preview">("edit");
+  const [mainProjectImages, setMainProjectImages] = useState<File[]>([]);
+  const [projectGalleryImages, setProjectGalleryImages] = useState<File[]>([]);
   const { toast } = useToast();
+
+  async function handleLogout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    router.replace("/admin/login");
+    router.refresh();
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,22 +70,18 @@ const Admin = () => {
   return (
     <div className="min-h-screen pt-16">
       {/* Header */}
-      <section className="py-20 bg-gradient-subtle">
+      <section className="py-14 bg-gradient-subtle">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-display font-semibold text-foreground mb-6">
+          <h1 className="text-3xl md:text-4xl font-display font-semibold text-foreground">
             Добавить проект в портфолио
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Поделитесь своим интерьерным проектом с нами. Лучшие работы мы разместим в нашем портфолио.
-          </p>
         </div>
       </section>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Info Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="shadow-soft mb-6">
+            <Card className="shadow-soft">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center">
                   <FileText className="h-5 w-5 mr-2 text-primary" />
@@ -88,47 +98,22 @@ const Admin = () => {
                 <div>
                   <Badge variant="secondary" className="mb-2">Описание</Badge>
                   <p className="text-sm text-muted-foreground">
-                    Краткое описание проекта, площадь, стиль, особенности
+                    Поддерживается markdown: #, ##, **жирный**, *курсив*
                   </p>
                 </div>
-                <div>
-                  <Badge variant="secondary" className="mb-2">Контакты</Badge>
-                  <p className="text-sm text-muted-foreground">
-                    Данные для связи и согласования публикации
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Phone className="h-5 w-5 mr-2 text-primary" />
-                  Связь с нами
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Есть вопросы о размещении в портфолио?
-                </p>
-                <div className="space-y-2 text-sm">
-                  <p>📞 +7 (999) 123-45-67</p>
-                  <p>📧 portfolio@studioloft.ru</p>
-                </div>
+                <Button type="button" variant="outline" className="w-full mt-2" onClick={handleLogout}>
+                  Выйти
+                </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Upload Form */}
           <div className="lg:col-span-2">
             <Card className="shadow-elegant">
               <CardHeader>
                 <CardTitle className="text-2xl font-display">
                   Форма подачи проекта
                 </CardTitle>
-                <p className="text-muted-foreground">
-                  Заполните информацию о вашем проекте
-                </p>
               </CardHeader>
               <CardContent className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -183,95 +168,63 @@ const Admin = () => {
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-3">
                       <Label htmlFor="description">Описание проекта *</Label>
-                      <Textarea 
-                        id="description" 
-                        placeholder="Расскажите об особенностях проекта, использованных материалах, цветовых решениях..."
-                        className="mt-1 h-32"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* Photos Upload */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Фотографии проекта
-                    </h3>
-                    
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                      <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <div className="space-y-2">
-                        <p className="text-foreground font-medium">
-                          Загрузите фотографии проекта
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          Поддерживаются форматы: JPG, PNG. Максимум 15 файлов.
-                        </p>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant={descriptionMode === "edit" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setDescriptionMode("edit")}
+                        >
+                          Редактировать
+                        </Button>
+                        <Button
+                          type="button"
+                          variant={descriptionMode === "preview" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setDescriptionMode("preview")}
+                        >
+                          Предпросмотр
+                        </Button>
                       </div>
-                      <Button type="button" variant="outline" className="mt-4">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Выбрать файлы
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Contact Info */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Контактная информация
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="author-name">Ваше имя *</Label>
-                        <Input 
-                          id="author-name" 
-                          placeholder="Имя Фамилия" 
-                          className="mt-1" 
+                      {descriptionMode === "edit" ? (
+                        <Textarea
+                          id="description"
+                          placeholder="Расскажите об особенностях проекта, использованных материалах, цветовых решениях..."
+                          className="mt-1 h-32"
                           required
+                          value={description}
+                          onChange={(event) => setDescription(event.target.value)}
                         />
-                      </div>
-                      <div>
-                        <Label htmlFor="author-phone">Телефон *</Label>
-                        <Input 
-                          id="author-phone" 
-                          placeholder="+7 (999) 123-45-67" 
-                          className="mt-1" 
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="author-email">Email *</Label>
-                      <Input 
-                        id="author-email" 
-                        type="email" 
-                        placeholder="your@email.com" 
-                        className="mt-1" 
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="company">Компания/студия</Label>
-                      <Input 
-                        id="company" 
-                        placeholder="Название компании (если есть)" 
-                        className="mt-1" 
-                      />
+                      ) : (
+                        <div className="min-h-32 rounded-md border border-input p-3 prose prose-sm max-w-none">
+                          <ReactMarkdown>{description || "*Начните вводить описание, чтобы увидеть предпросмотр.*"}</ReactMarkdown>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  <ImageUploadField
+                    id="main-images"
+                    title="Главные фотографии проекта"
+                    description="Загрузите главные изображения проекта. Можно выбрать несколько файлов."
+                    files={mainProjectImages}
+                    onChange={setMainProjectImages}
+                  />
+
+                  <ImageUploadField
+                    id="gallery-images"
+                    title="Фотографии проекта"
+                    description="Поддерживаются форматы: JPG, PNG. Максимум 15 файлов."
+                    files={projectGalleryImages}
+                    onChange={setProjectGalleryImages}
+                  />
 
                   <div className="pt-6 border-t">
                     <Button type="submit" className="w-full" size="lg">
-                      Отправить проект на рассмотрение
+                      Отправить
                     </Button>
-                    <p className="text-xs text-muted-foreground text-center mt-4">
-                      Отправляя форму, вы соглашаетесь на обработку персональных данных и возможную публикацию проекта в нашем портфолио
-                    </p>
                   </div>
                 </form>
               </CardContent>

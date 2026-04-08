@@ -15,7 +15,6 @@ const Navigation = () => {
     { name: "Услуги", path: "/services" },
     { name: "Портфолио", path: "/portfolio" },
     { name: "Заказать", path: "/order" },
-    { name: "Админ", path: "/admin" }
   ];
 
   const isActive = (path: string) => pathname === path;
