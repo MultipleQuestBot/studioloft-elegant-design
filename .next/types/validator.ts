@@ -128,6 +128,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/api/portfolio-feedback/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/portfolio-feedback">> = Specific
+  const handler = {} as typeof import("../../src/app/api/portfolio-feedback/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 
 
 

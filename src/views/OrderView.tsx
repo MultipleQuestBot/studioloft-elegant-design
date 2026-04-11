@@ -1,34 +1,46 @@
 "use client";
 
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { CheckCircle, Star, Phone, Mail } from "lucide-react";
+import { CheckCircle, Star } from "lucide-react";
 import { ContactInfo } from "@/components/ContactInfo";
-import { useEffect, useState } from "react";
-import config from "@/ApiConfig";
+import { useState } from "react";
+import type { Project } from "@/types/project";
+import { ProjectPreviewCard } from "@/components/portfolio/ProjectPreviewCard";
 
-type RandomProjectCard = {
-  image?: string;
-  title?: string;
-  result?: string;
+type OrderViewProps = {
+  projects: Project[];
 };
 
-const Order = () => {
-  const [cards, setCards] = useState<RandomProjectCard[]>([]);
-  const fetchCards = async () => {
-      const res = await fetch(`${config.backendPath}/portfolio/random?limit=10`);
-      const data = await res.json();
-      setCards(data);
-  };
+const PHONE_MASK_PREFIX = "+7 ";
 
-  useEffect(() => {
-      fetchCards();
-  }, []);
+function formatPhoneValue(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  const normalized = digits.startsWith("7") ? digits.slice(1, 11) : digits.slice(0, 10);
+
+  if (normalized.length === 0) return PHONE_MASK_PREFIX;
+
+  let result = `${PHONE_MASK_PREFIX}(`;
+  result += normalized.slice(0, 3);
+  if (normalized.length >= 3) result += ") ";
+  if (normalized.length > 3) result += normalized.slice(3, 6);
+  if (normalized.length >= 6) result += "-";
+  if (normalized.length > 6) result += normalized.slice(6, 8);
+  if (normalized.length >= 8) result += "-";
+  if (normalized.length > 8) result += normalized.slice(8, 10);
+
+  return result;
+}
+
+const Order = ({ projects }: OrderViewProps) => {
+  const [phone, setPhone] = useState(PHONE_MASK_PREFIX);
+  const [objectType, setObjectType] = useState("");
+  const [customObjectType, setCustomObjectType] = useState("");
 
   const packageFeatures = [
     "Планировочное решение",
@@ -43,13 +55,21 @@ const Order = () => {
 
   return (
     <div className="min-h-screen pt-16">
-      {/* Header */}
-      <section className="py-20 bg-gradient-hero">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-display font-semibold text-foreground mb-6">
+      <section className="relative py-24 overflow-hidden">
+        <Image
+          src="/order-bg.jpg"
+          alt="Персональный проект"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/60" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-5xl font-display font-semibold text-white mb-6">
             Персональный проект
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-xl text-white/90 max-w-3xl mx-auto">
             Создаем интерьер полностью под ваши потребности — от планировки до последней детали
           </p>
         </div>
@@ -84,28 +104,12 @@ const Order = () => {
                 Примеры реализованных решений
               </h3>
               <div className="space-y-6">
-                {cards.map((project, index) => (
-                  <Card key={index} className="shadow-soft">
-                    <CardContent className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-20 h-20 bg-muted rounded-lg flex-shrink-0">
-                          <img 
-                            src={project.image} 
-                            alt={project.title}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-foreground mb-2">
-                            {project.title}
-                          </h4>
-                          <p className="text-muted-foreground text-sm">
-                            {project.result}
-                          </p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                {projects.map((project) => (
+                  <ProjectPreviewCard
+                    key={project.id}
+                    project={project}
+                    imageSizes="(max-width: 1024px) 100vw, 50vw"
+                  />
                 ))}
               </div>
             </div>
@@ -131,7 +135,14 @@ const Order = () => {
                     </div>
                     <div>
                       <Label htmlFor="phone">Телефон *</Label>
-                      <Input id="phone" placeholder="+7 (999) 123-45-67" className="mt-1" />
+                      <Input
+                        id="phone"
+                        value={phone}
+                        onChange={(event) => setPhone(formatPhoneValue(event.target.value))}
+                        placeholder="+7 (999) 123-45-67"
+                        className="mt-1"
+                        inputMode="tel"
+                      />
                     </div>
                   </div>
 
@@ -142,7 +153,13 @@ const Order = () => {
 
                   <div>
                     <Label htmlFor="object-type">Тип объекта *</Label>
-                    <Select>
+                    <Select
+                      value={objectType}
+                      onValueChange={(value) => {
+                        setObjectType(value);
+                        if (value !== "other") setCustomObjectType("");
+                      }}
+                    >
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Выберите тип объекта" />
                       </SelectTrigger>
@@ -151,9 +168,23 @@ const Order = () => {
                         <SelectItem value="house">Частный дом</SelectItem>
                         <SelectItem value="commercial">Коммерческое помещение</SelectItem>
                         <SelectItem value="office">Офис</SelectItem>
+                        <SelectItem value="other">Другое</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {objectType === "other" && (
+                    <div>
+                      <Label htmlFor="custom-object-type">Уточните тип объекта *</Label>
+                      <Input
+                        id="custom-object-type"
+                        value={customObjectType}
+                        onChange={(event) => setCustomObjectType(event.target.value)}
+                        placeholder="Например: таунхаус, студия, лофт"
+                        className="mt-1"
+                      />
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -167,42 +198,12 @@ const Order = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="budget">Бюджет проекта</Label>
-                    <Select>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Выберите диапазон" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="300-500">300 - 500 тыс. ₽</SelectItem>
-                        <SelectItem value="500-1000">500 тыс. - 1 млн ₽</SelectItem>
-                        <SelectItem value="1000-2000">1 - 2 млн ₽</SelectItem>
-                        <SelectItem value="2000+">Более 2 млн ₽</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
                     <Label htmlFor="description">Описание проекта</Label>
                     <Textarea 
                       id="description" 
                       placeholder="Расскажите о ваших пожеланиях, стиле, особенностях..."
                       className="mt-1 h-24"
                     />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="design" />
-                      <Label htmlFor="design">Дизайн-проект</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="renovation" />
-                      <Label htmlFor="renovation">Ремонт и отделка</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="furniture" />
-                      <Label htmlFor="furniture">Изготовление мебели</Label>
-                    </div>
                   </div>
 
                   <Button type="submit" className="w-full" size="lg">

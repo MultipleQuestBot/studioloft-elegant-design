@@ -19,7 +19,7 @@ const ImageGallery = ({ images, alt }: ImageGalleryProps) => {
               src={image}
               alt={`${alt} ${index + 1}`}
               fill
-              unoptimized
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             />
           </div>

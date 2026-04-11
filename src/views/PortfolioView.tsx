@@ -1,70 +1,71 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-
+import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Filter } from "lucide-react";
-import type { PortfolioProject } from "@/lib/api";
+import { getProjects } from "@/lib/api";
+import type { Project, ProjectType } from "@/types/project";
+import { PROJECT_TYPES } from "@/constants/project-types";
+import { PortfolioFeedbackDialog } from "@/components/portfolio/PortfolioFeedbackDialog";
+import { ProjectPreviewCard } from "@/components/portfolio/ProjectPreviewCard";
+import { PageHeroCover } from "@/components/layout/PageHeroCover";
+import { MarketingCtaCover } from "@/components/layout/MarketingCtaCover";
 
-const MAX_PER_PAGE = 6;
+const PAGE_LIMIT = 12;
+
+const PORTFOLIO_HERO_BG = "/portfolio-header.jpg";
+const PORTFOLIO_CTA_BG = "/order-bg.jpg";
 
 type PortfolioViewProps = {
-  initialProjects: PortfolioProject[];
+  initialProjects: Project[];
+  initialHasMore: boolean;
 };
 
-const Portfolio = ({ initialProjects }: PortfolioViewProps) => {
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [visibleProjects, setVisibleProjects] = useState(MAX_PER_PAGE);
-  const allProjects = initialProjects;
+const Portfolio = ({ initialProjects, initialHasMore }: PortfolioViewProps) => {
+  const [isPending, startTransition] = useTransition();
+  const [activeFilter, setActiveFilter] = useState<ProjectType | "all">("all");
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(initialHasMore);
 
-  const filters = [
-    { id: "all", label: "Все проекты" },
-    { id: "apartment", label: "Квартиры" },
-    { id: "house", label: "Дома" },
-    { id: "renovation", label: "Ремонт" }
-  ];
+  const filters = useMemo(
+    () => [{ id: "all" as const, label: "Все проекты" }, ...PROJECT_TYPES],
+    [],
+  );
 
-  // memoize filtered list
-  const filteredProjects = useMemo(() => {
-    if (activeFilter === "all") return allProjects;
-    return allProjects.filter(project => project.category === activeFilter);
-  }, [allProjects, activeFilter]);
-
-  useEffect(() => {
-    setVisibleProjects(MAX_PER_PAGE);
-  }, [activeFilter]);
-
-  // Slice visible items
-  const projectsToShow = filteredProjects.slice(0, visibleProjects);
-
-  // Handler for "Показать ещё" — ограничиваем по фактическому объёму
-  function handleMoreProjects() {
-    setVisibleProjects(prev => {
-      const next = prev + MAX_PER_PAGE;
-      return Math.min(next, filteredProjects.length);
+  async function handleFilterChange(nextFilter: ProjectType | "all") {
+    setActiveFilter(nextFilter);
+    const result = await getProjects({
+      type: nextFilter === "all" ? undefined : nextFilter,
+      page: 1,
+      limit: PAGE_LIMIT,
     });
+    setProjects(result.items);
+    setCurrentPage(1);
+    setHasMore(result.hasMore);
+  }
+
+  async function handleLoadMore() {
+    const nextPage = currentPage + 1;
+    const result = await getProjects({
+      type: activeFilter === "all" ? undefined : activeFilter,
+      page: nextPage,
+      limit: PAGE_LIMIT,
+    });
+    setProjects((prev) => [...prev, ...result.items]);
+    setCurrentPage(nextPage);
+    setHasMore(result.hasMore);
   }
 
   return (
     <div className="min-h-screen pt-16">
-      {/* Header */}
-      <section className="py-20 bg-gradient-subtle">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-display font-semibold text-foreground mb-6">
-            Портфолио
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Реализованные проекты — от уютных квартир до просторных загородных домов
-          </p>
-        </div>
-      </section>
+      <PageHeroCover
+        imageSrc={PORTFOLIO_HERO_BG}
+        title="Портфолио"
+        subtitle="Реализованные проекты — от уютных квартир до просторных загородных домов"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Filters */}
         <div className="flex flex-wrap items-center gap-4 mb-12">
           <div className="flex items-center text-muted-foreground">
             <Filter className="h-5 w-5 mr-2" />
@@ -74,100 +75,60 @@ const Portfolio = ({ initialProjects }: PortfolioViewProps) => {
             <Button
               key={filter.id}
               variant={activeFilter === filter.id ? "default" : "outline"}
-              onClick={() => setActiveFilter(filter.id)}
-              className="transition-all duration-300"
+              onClick={() =>
+                startTransition(() => {
+                  void handleFilterChange(filter.id);
+                })
+              }
+              className="transition-all duration-300 hover:scale-105"
+              disabled={isPending}
             >
               {filter.label}
             </Button>
           ))}
         </div>
 
-        {/* Projects Grid */}
-        <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {projectsToShow.map((project) => (
-                <Card
-                  key={project.id ?? `${project.title ?? "project"}-${project.image ?? "image"}`}
-                  className="group shadow-soft hover:shadow-elegant transition-all duration-300 cursor-pointer overflow-hidden"
-                >
-                  <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-                    {project.image ? (
-                      <Image
-                        src={project.image}
-                        alt={project.title || "Проект"}
-                        fill
-                        unoptimized
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : null}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"></div>
-                  </div>
-
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      {project.area && (
-                        <Badge variant="secondary" className="text-xs">
-                          {project.area}
-                        </Badge>
-                      )}
-                      {project.duration && (
-                        <Badge variant="outline" className="text-xs">
-                          {project.duration}
-                        </Badge>
-                      )}
-                    </div>
-
-                    <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                      {project.title}
-                    </h3>
-
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {project.description}
-                    </p>
-
-                    <Button
-                      variant="ghost"
-                      className="w-full mt-4 group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300"
-                    >
-                      <Link href={`/portfolio/${project.id}`}>Подробнее</Link>
-                      
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* Empty State */}
-            {filteredProjects.length === 0 && (
-              <div className="text-center py-20">
-                <p className="text-muted-foreground text-lg">
-                  Проекты в данной категории пока не добавлены
-                </p>
-              </div>
-            )}
-
-            {/* Load More — показываем только если ещё есть скрытые */}
-            {filteredProjects.length > 0 && visibleProjects < filteredProjects.length && (
-              <div className="text-center mt-16">
-                <Button variant="outline" size="lg" onClick={handleMoreProjects}>
-                  Показать еще проекты
-                </Button>
-              </div>
-            )}
-        </>
-
-        {/* CTA Section */}
-        <div className="mt-20 text-center bg-gradient-hero p-12 rounded-lg">
-          <h2 className="text-3xl font-display font-semibold text-foreground mb-4">
-            Хотите увидеть свой проект в нашем портфолио?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
-            Начните создавать интерьер вашей мечты вместе с нами
-          </p>
-          <Button variant="default" size="lg">
-            Обсудить проект
-          </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {projects.map((project) => (
+            <ProjectPreviewCard
+              key={project.id}
+              project={project}
+              imageSizes="(max-width: 768px) 100vw, 33vw"
+            />
+          ))}
         </div>
+
+        {projects.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground text-lg">Проекты в данной категории пока не добавлены</p>
+          </div>
+        )}
+
+        {projects.length > 0 && hasMore && (
+          <div className="text-center mt-16">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() =>
+                startTransition(() => {
+                  void handleLoadMore();
+                })
+              }
+              className="hover:scale-105 transition-transform duration-300"
+              disabled={isPending}
+            >
+              Ещё
+            </Button>
+          </div>
+        )}
+
+        <MarketingCtaCover
+          className="mt-20"
+          imageSrc={PORTFOLIO_CTA_BG}
+          title="Хотите увидеть свой проект в нашем портфолио?"
+          description="Начните создавать интерьер вашей мечты вместе с нами"
+          actions={<PortfolioFeedbackDialog />}
+        />
       </div>
     </div>
   );

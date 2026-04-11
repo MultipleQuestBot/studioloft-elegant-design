@@ -1,115 +1,127 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CheckCircle, Clock, Users, Palette, Hammer, Award } from "lucide-react";
-import heroImage from "@/assets/hero-apartment.jpg";
+import { ConsultationRequestDialog } from "@/components/ConsultationRequestDialog";
+import { MarketingCtaCover } from "@/components/layout/MarketingCtaCover";
+
+const HERO_BG = "/order-bg.jpg";
+const CTA_BG = "/portfolio-header.jpg";
 
 const Home = () => {
-  const heroImageUrl = typeof heroImage === "string" ? heroImage : heroImage.src;
   const advantages = [
     {
       icon: <Palette className="h-8 w-8" />,
       title: "Индивидуальный дизайн",
-      description: "Каждый проект создается с нуля под ваши потребности и стиль жизни"
+      description: "Каждый проект создается с нуля под ваши потребности и стиль жизни",
     },
     {
       icon: <Users className="h-8 w-8" />,
       title: "Собственная команда",
-      description: "Полный контроль качества благодаря работе с нашими мастерами"
+      description: "Полный контроль качества благодаря работе с нашими мастерами",
     },
     {
       icon: <Hammer className="h-8 w-8" />,
       title: "Ремонт под ключ",
-      description: "От проекта до финишной отделки — все в одних руках"
+      description: "От проекта до финишной отделки — все в одних руках",
     },
     {
       icon: <Clock className="h-8 w-8" />,
       title: "Соблюдение сроков",
-      description: "Четкое планирование и контроль на каждом этапе работ"
+      description: "Четкое планирование и контроль на каждом этапе работ",
     },
     {
       icon: <CheckCircle className="h-8 w-8" />,
       title: "Авторский надзор",
-      description: "Дизайнер контролирует реализацию проекта до мельчайших деталей"
+      description: "Дизайнер контролирует реализацию проекта до мельчайших деталей",
     },
     {
       icon: <Award className="h-8 w-8" />,
       title: "Гарантия качества",
-      description: "Гарантируем результат и долговечность всех выполненных работ"
-    }
+      description: "Гарантируем результат и долговечность всех выполненных работ",
+    },
   ];
 
   const faqItems = [
     {
       question: "Какие сроки реализации проекта?",
-      answer: "Дизайн-проект занимает 2-4 недели, ремонтные работы — от 2 до 6 месяцев в зависимости от сложности и площади объекта."
+      answer:
+        "Дизайн-проект занимает 2-4 недели, ремонтные работы — от 2 до 6 месяцев в зависимости от сложности и площади объекта.",
     },
     {
       question: "Какие этапы включает работа?",
-      answer: "Консультация → Замеры → Дизайн-проект → Согласование → Закупка материалов → Ремонтные работы → Расстановка мебели и декора."
+      answer:
+        "Консультация → Замеры → Дизайн-проект → Согласование → Закупка материалов → Ремонтные работы → Расстановка мебели и декора.",
     },
     {
       question: "Делаете ли вы только индивидуальную мебель?",
-      answer: "Мы можем создать мебель по индивидуальным размерам и дизайну, а также подобрать готовые решения от проверенных производителей."
+      answer:
+        "Мы можем создать мебель по индивидуальным размерам и дизайну, а также подобрать готовые решения от проверенных производителей.",
     },
     {
       question: "Работаете ли вы с существующим ремонтом?",
-      answer: "Да, мы можем создать дизайн с учетом уже имеющейся отделки или предложить варианты частичного обновления интерьера."
-    }
+      answer:
+        "Да, мы можем создать дизайн с учетом уже имеющейся отделки или предложить варианты частичного обновления интерьера.",
+    },
   ];
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div 
+      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat pt-16">
+        <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImageUrl})` }}
-        >
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
-        
+          style={{ backgroundImage: `url(${HERO_BG})` }}
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/55 to-black/80"
+          aria-hidden
+        />
+
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-display font-light mb-6 leading-tight">
-            Создаем пространства<br />
+          <h1 className="text-5xl md:text-7xl font-display font-light mb-6 leading-tight drop-shadow-sm">
+            Создаем пространства
+            <br />
             <span className="font-semibold">для жизни</span>
           </h1>
-          <p className="text-xl md:text-2xl mb-8 opacity-90 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl mb-8 text-white/95 max-w-2xl mx-auto drop-shadow-sm">
             Индивидуальный дизайн интерьера с полным сопровождением проекта от идеи до ключей
           </p>
-          <div className="space-x-4">
-            <Button variant="hero" size="lg" className="text-lg px-8 py-3">
-              Начать проект
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Button variant="hero" size="lg" className="text-lg px-8 py-3 hover:scale-105" asChild>
+              <Link href="/order">Начать проект</Link>
             </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 py-3 border-white text-black hover:bg-white hover:text-gray-500">
-              Посмотреть работы
+            <Button
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-3 border-2 border-white/90 bg-white/10 text-white shadow-soft backdrop-blur-sm hover:bg-white/20 hover:text-white hover:border-white hover:scale-105 hover:shadow-elegant transition-all duration-300"
+              asChild
+            >
+              <Link href="/portfolio">Посмотреть работы</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
       <section className="py-20 bg-gradient-subtle">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-4xl font-display font-semibold text-foreground mb-6">
-                О студии studioloft
-              </h2>
+              <h2 className="text-4xl font-display font-semibold text-foreground mb-6">О студии studioloft</h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Мы — команда профессионалов, которая создает уникальные интерьеры с полным циклом реализации. 
-                  От первого эскиза до финишной отделки.
+                  Мы — команда профессионалов, которая создает уникальные интерьеры с полным циклом реализации. От
+                  первого эскиза до финишной отделки.
                 </p>
                 <p>
-                  Наша особенность — собственная бригада строителей и мастеров, что позволяет 
-                  гарантировать качество и соблюдение авторского замысла на каждом этапе.
+                  Наша особенность — собственная бригада строителей и мастеров, что позволяет гарантировать качество и
+                  соблюдение авторского замысла на каждом этапе.
                 </p>
                 <p>
-                  Каждый проект для нас — это история о людях, которые будут жить в созданном пространстве. 
-                  Поэтому мы уделяем особое внимание вашему образу жизни и потребностям.
+                  Каждый проект для нас — это история о людях, которые будут жить в созданном пространстве. Поэтому мы
+                  уделяем особое внимание вашему образу жизни и потребностям.
                 </p>
               </div>
             </div>
@@ -147,13 +159,10 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Advantages Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-display font-semibold text-foreground mb-4">
-              Почему выбирают нас
-            </h2>
+            <h2 className="text-4xl font-display font-semibold text-foreground mb-4">Почему выбирают нас</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Каждое преимущество — это результат многолетнего опыта и стремления к совершенству
             </p>
@@ -166,12 +175,8 @@ const Home = () => {
                   <div className="text-primary mb-4 flex justify-center group-hover:scale-110 transition-transform duration-300">
                     {advantage.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-3">
-                    {advantage.title}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {advantage.description}
-                  </p>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">{advantage.title}</h3>
+                  <p className="text-muted-foreground">{advantage.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -179,49 +184,45 @@ const Home = () => {
         </div>
       </section>
 
-      {/* FAQ Section */}
       <section className="py-20 bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-display font-semibold text-foreground mb-4">
-              Часто задаваемые вопросы
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Ответы на самые популярные вопросы о нашей работе
-            </p>
+            <h2 className="text-4xl font-display font-semibold text-foreground mb-4">Часто задаваемые вопросы</h2>
+            <p className="text-xl text-muted-foreground">Ответы на самые популярные вопросы о нашей работе</p>
           </div>
 
           <Accordion type="single" collapsible className="space-y-4">
             {faqItems.map((item, index) => (
-              <AccordionItem 
-                key={index} 
-                value={`item-${index}`} 
+              <AccordionItem
+                key={index}
+                value={`item-${index}`}
                 className="bg-background border border-border rounded-lg px-6 shadow-soft"
               >
-                <AccordionTrigger className="text-left font-medium">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {item.answer}
-                </AccordionContent>
+                <AccordionTrigger className="text-left font-medium">{item.question}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">{item.answer}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-hero">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-display font-semibold text-foreground mb-6">
-            Готовы создать дом вашей мечты?
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Запишитесь на бесплатную консультацию, и мы обсудим ваш проект
-          </p>
-          <Button variant="default" size="lg" className="text-lg px-8 py-3">
-            Записаться на консультацию
-          </Button>
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <MarketingCtaCover
+            imageSrc={CTA_BG}
+            title="Готовы создать дом вашей мечты?"
+            description="Запишитесь на бесплатную консультацию, и мы обсудим ваш проект"
+            actions={
+              <ConsultationRequestDialog
+                title="Запись на консультацию"
+                trigger={
+                  <Button variant="default" size="lg" className="text-lg px-8 py-3">
+                    Записаться на консультацию
+                  </Button>
+                }
+              />
+            }
+          />
         </div>
       </section>
     </div>

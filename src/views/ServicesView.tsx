@@ -1,18 +1,24 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Palette, Hammer, Clock, CheckCircle, Users, Award, ScanEye} from "lucide-react";
+import { Palette, Hammer, Clock, CheckCircle, Users, Award, ScanEye } from "lucide-react";
+import { PageHeroCover } from "@/components/layout/PageHeroCover";
+import { MarketingCtaCover } from "@/components/layout/MarketingCtaCover";
+import { ConsultationRequestDialog } from "@/components/ConsultationRequestDialog";
+
+const SERVICES_HERO_BG = "/order-bg.jpg";
+const SERVICES_CTA_BG = "/portfolio-header.jpg";
 
 const Services = () => {
   const designSteps = [
     "Консультация и техническое задание",
-    "Обмерный план и планировочные решения", 
+    "Обмерный план и планировочные решения",
     "3D-визуализация и подбор материалов",
     "Рабочие чертежи и комплектация",
-    "Авторский надзор за реализацией"
+    "Авторский надзор за реализацией",
   ];
 
   const renovationSteps = [
@@ -20,33 +26,27 @@ const Services = () => {
     "Возведение перегородок и черновые работы",
     "Инженерные системы (электрика, сантехника)",
     "Чистовая отделка стен, потолков, полов",
-    "Установка мебели и финишный декор"
+    "Установка мебели и финишный декор",
   ];
 
-  const supervisionSteps = ["Передача проекта и согласование", 
-    "Проверка сметы", 
+  const supervisionSteps = [
+    "Передача проекта и согласование",
+    "Проверка сметы",
     "Разметка («обнос»)",
     "Контроль общестроительных работ",
     "Контроль закупки материалов",
-    "Передача исполнительной документации"
+    "Передача исполнительной документации",
   ];
 
   return (
     <div className="min-h-screen pt-16">
-      {/* Header */}
-      <section className="py-20 bg-gradient-subtle">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl font-display font-semibold text-foreground mb-6">
-            Наши услуги
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Полный цикл создания интерьера — от концепции до финишной отделки собственными силами
-          </p>
-        </div>
-      </section>
+      <PageHeroCover
+        imageSrc={SERVICES_HERO_BG}
+        title="Наши услуги"
+        subtitle="Полный цикл создания интерьера — от концепции до финишной отделки собственными силами"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        {/* Interior Design Service */}
         <div className="mb-20">
           <Card className="shadow-elegant overflow-hidden">
             <CardHeader className="bg-gradient-hero p-8">
@@ -55,22 +55,16 @@ const Services = () => {
                   <Palette className="h-8 w-8 text-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-display text-foreground">
-                    Интерьер под ключ
-                  </CardTitle>
-                  <p className="text-muted-foreground text-lg">
-                    Разработка индивидуального интерьера и изготовление мебели
-                  </p>
+                  <CardTitle className="text-3xl font-display text-foreground">Интерьер под ключ</CardTitle>
+                  <p className="text-muted-foreground text-lg">Разработка индивидуального интерьера и изготовление мебели</p>
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-6">
-                    Что включено
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">Что включено</h3>
                   <div className="space-y-4">
                     {designSteps.map((step, index) => (
                       <div key={index} className="flex items-start space-x-3">
@@ -86,9 +80,7 @@ const Services = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-6">
-                    Особенности процесса
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">Особенности процесса</h3>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
                       <CheckCircle className="h-5 w-5 text-primary" />
@@ -110,14 +102,8 @@ const Services = () => {
 
                   <Separator className="my-6" />
 
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <Badge variant="secondary">2-4 недели</Badge>
-                    <Badge variant="secondary">От 3000 ₽/м²</Badge>
-                    <Badge variant="secondary">Гарантия</Badge>
-                  </div>
-
-                  <Button variant="default" size="lg" className="w-full">
-                    Заказать дизайн-проект
+                  <Button variant="default" size="lg" className="w-full hover:scale-[1.02] transition-transform duration-300" asChild>
+                    <Link href="/order">Заказать дизайн-проект</Link>
                   </Button>
                 </div>
               </div>
@@ -125,7 +111,6 @@ const Services = () => {
           </Card>
         </div>
 
-        {/* Renovation Service */}
         <div>
           <Card className="shadow-elegant overflow-hidden">
             <CardHeader className="bg-muted/50 p-8">
@@ -134,22 +119,16 @@ const Services = () => {
                   <Hammer className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-display text-foreground">
-                    Ремонт и отделка
-                  </CardTitle>
-                  <p className="text-muted-foreground text-lg">
-                    Реализация проекта силами собственной команды
-                  </p>
+                  <CardTitle className="text-3xl font-display text-foreground">Ремонт и отделка</CardTitle>
+                  <p className="text-muted-foreground text-lg">Реализация проекта силами собственной команды</p>
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-6">
-                    Этапы ремонта
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">Этапы ремонта</h3>
                   <div className="space-y-4">
                     {renovationSteps.map((step, index) => (
                       <div key={index} className="flex items-start space-x-3">
@@ -165,9 +144,7 @@ const Services = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-6">
-                    Преимущества
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">Преимущества</h3>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
                       <Users className="h-5 w-5 text-primary" />
@@ -189,22 +166,16 @@ const Services = () => {
 
                   <Separator className="my-6" />
 
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <Badge variant="secondary">2-6 месяцев</Badge>
-                    <Badge variant="secondary">От 15000 ₽/м²</Badge>
-                    <Badge variant="secondary">Гарантия 2 года</Badge>
-                  </div>
-
-                  <Button variant="default" size="lg" className="w-full">
-                    Заказать ремонт
+                  <Button variant="default" size="lg" className="w-full hover:scale-[1.02] transition-transform duration-300" asChild>
+                    <Link href="/order">Заказать ремонт</Link>
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
-        {/* Supervision Service */}
-        <div className="mt-20" >
+
+        <div className="mt-20">
           <Card className="shadow-elegant overflow-hidden">
             <CardHeader className="bg-muted/50 p-8">
               <div className="flex items-center space-x-4">
@@ -212,24 +183,18 @@ const Services = () => {
                   <ScanEye className="h-8 w-8 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-display text-foreground">
-                    Авторский надзор
-                  </CardTitle>
-                  <p className="text-muted-foreground text-lg">
-                    Проследим, чтобы всё было выполнено согласно проекту
-                  </p>
+                  <CardTitle className="text-3xl font-display text-foreground">Авторский надзор</CardTitle>
+                  <p className="text-muted-foreground text-lg">Проследим, чтобы всё было выполнено согласно проекту</p>
                 </div>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-6">
-                    Этапы надзора
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">Этапы надзора</h3>
                   <div className="space-y-4">
-                    {renovationSteps.map((step, index) => (
+                    {supervisionSteps.map((step, index) => (
                       <div key={index} className="flex items-start space-x-3">
                         <div className="flex-shrink-0 w-8 h-8 bg-secondary/10 text-secondary-foreground rounded-full flex items-center justify-center text-sm font-semibold">
                           {index + 1}
@@ -243,9 +208,7 @@ const Services = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-semibold text-foreground mb-6">
-                    Преимущества
-                  </h3>
+                  <h3 className="text-2xl font-semibold text-foreground mb-6">Преимущества</h3>
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
                       <CheckCircle className="h-5 w-5 text-primary" />
@@ -267,32 +230,27 @@ const Services = () => {
 
                   <Separator className="my-6" />
 
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <Badge variant="secondary">2-6 месяцев</Badge>
-                    <Badge variant="secondary">От 15000 ₽/м²</Badge>
-                    <Badge variant="secondary">Гарантия 2 года</Badge>
-                  </div>
-
-                  <Button variant="default" size="lg" className="w-full">
-                    Заказать надзор
+                  <Button variant="default" size="lg" className="w-full hover:scale-[1.02] transition-transform duration-300" asChild>
+                    <Link href="/order">Заказать надзор</Link>
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
-        {/* CTA Section */}
-        <div className="mt-20 text-center bg-gradient-hero p-12 rounded-lg">
-          <h2 className="text-3xl font-display font-semibold text-foreground mb-4">
-            Готовы обсудить ваш проект?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-6 max-w-2xl mx-auto">
-            Оставьте заявку, и мы свяжемся с вами для консультации и расчета стоимости
-          </p>
-          <Button variant="default" size="lg">
-            Получить консультацию
-          </Button>
-        </div>
+
+        <MarketingCtaCover
+          className="mt-20"
+          imageSrc={SERVICES_CTA_BG}
+          title="Готовы обсудить ваш проект?"
+          description="Оставьте заявку, и мы свяжемся с вами для консультации и расчета стоимости"
+          actions={
+            <ConsultationRequestDialog
+              title="Получить консультацию"
+              trigger={<Button variant="default" size="lg">Получить консультацию</Button>}
+            />
+          }
+        />
       </div>
     </div>
   );
