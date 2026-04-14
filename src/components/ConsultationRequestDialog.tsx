@@ -77,7 +77,7 @@ export function ConsultationRequestDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="consultation-contact">Телефон или email</Label>
+            <Label htmlFor="consultation-contact">Телефон</Label>
             <Input
               id="consultation-contact"
               required

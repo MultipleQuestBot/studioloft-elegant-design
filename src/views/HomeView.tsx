@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CheckCircle, Clock, Users, Palette, Hammer, Award } from "lucide-react";
 import { ConsultationRequestDialog } from "@/components/ConsultationRequestDialog";
+import { ConsultationTriggerButton } from "@/components/ConsultationTriggerButton";
 import { MarketingCtaCover } from "@/components/layout/MarketingCtaCover";
 
 const HERO_BG = "/order-bg.jpg";
@@ -216,9 +217,7 @@ const Home = () => {
               <ConsultationRequestDialog
                 title="Запись на консультацию"
                 trigger={
-                  <Button variant="default" size="lg" className="text-lg px-8 py-3">
-                    Записаться на консультацию
-                  </Button>
+                  <ConsultationTriggerButton>Записаться на консультацию</ConsultationTriggerButton>
                 }
               />
             }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { ConsultationTriggerButton } from "@/components/ConsultationTriggerButton";
 import { ConsultationRequestDialog } from "@/components/ConsultationRequestDialog";
 
 export function PortfolioFeedbackDialog() {
@@ -8,9 +8,7 @@ export function PortfolioFeedbackDialog() {
     <ConsultationRequestDialog
       title="Обсудить проект"
       trigger={
-        <Button variant="default" size="lg" className="hover:scale-105 transition-transform duration-300">
-          Обсудить проект
-        </Button>
+        <ConsultationTriggerButton>Обсудить проект</ConsultationTriggerButton>
       }
     />
   );

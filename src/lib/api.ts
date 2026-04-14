@@ -3,7 +3,7 @@ import type { Project, ProjectsQuery, ProjectsResponse } from "@/types/project";
 const BACKEND_URL = process.env.NEXT_PUBLIC_PATH_BACKEND || "http://localhost:8000";
 
 type RawProject = Record<string, unknown>;
-const FALLBACK_PROJECT_IMAGE = "/portfolio-header.jpg";
+export const FALLBACK_PROJECT_IMAGE = "/portfolio-header.jpg";
 
 const stringOrEmpty = (value: unknown) => (typeof value === "string" ? value : "");
 const numberOrZero = (value: unknown) => (typeof value === "number" ? value : 0);
@@ -14,10 +14,8 @@ export function isValidImagePath(value: unknown): value is string {
 }
 
 export function getProjectCardImageSrc(project: Project): string {
-  const firstValidMain = project.mainImages.find(isValidImagePath);
-  if (firstValidMain) return firstValidMain;
-  const firstValidGallery = project.images.find(isValidImagePath);
-  if (firstValidGallery) return firstValidGallery;
+  const mainImage = project.mainImages?.[0];
+  if (isValidImagePath(mainImage)) return mainImage;
   return FALLBACK_PROJECT_IMAGE;
 }
 

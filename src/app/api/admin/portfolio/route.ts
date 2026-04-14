@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/admin-auth";
+import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
 import { getBackendBaseUrl } from "@/lib/backend";
 
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
-  if (!token || !(await verifyAdminSessionToken(token))) {
+  if (!token) {
     return NextResponse.json({ detail: "Unauthorized" }, { status: 401 });
   }
 
@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      Cookie: `${ADMIN_COOKIE_NAME}=${token}`,
     },
     body: JSON.stringify(body),
   });

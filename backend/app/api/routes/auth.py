@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.security import create_access_token, decode_access_token, verify_admin_credentials
@@ -19,8 +19,16 @@ def login(body: LoginRequest) -> TokenResponse:
 
 
 @router.post("/logout")
-def logout() -> dict[str, bool]:
-    """Stateless JWT: client discards token. Endpoint provided for symmetry."""
+def logout(response: Response) -> dict[str, bool]:
+    response.set_cookie(
+        key="studioloft_admin_session",
+        value="",
+        max_age=0,
+        expires=0,
+        path="/",
+        httponly=True,
+        samesite="lax",
+    )
     return {"ok": True}
 
 

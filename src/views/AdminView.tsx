@@ -33,7 +33,7 @@ const Admin = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleLogout() {
-    await fetch("/api/admin/logout", { method: "POST" });
+    await fetch("/api/admin/logout", { method: "POST", credentials: "include" });
     router.replace("/admin/login");
     router.refresh();
   }
@@ -109,7 +109,7 @@ const Admin = () => {
         style: style.trim(),
         description: description.trim(),
         mainImages,
-        images,
+        images: galleryImages,
       }),
     });
     setIsSubmitting(false);

@@ -1,15 +1,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/admin-auth";
+import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
 import { getBackendBaseUrl } from "@/lib/backend";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 async function getToken() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
-  if (!token) return null;
-  return (await verifyAdminSessionToken(token)) ? token : null;
+  return cookieStore.get(ADMIN_COOKIE_NAME)?.value ?? null;
 }
 
 export async function PUT(request: Request, context: RouteContext) {
@@ -25,6 +23,7 @@ export async function PUT(request: Request, context: RouteContext) {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      Cookie: `${ADMIN_COOKIE_NAME}=${token}`,
     },
     body: JSON.stringify(body),
   });
@@ -44,7 +43,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const backend = getBackendBaseUrl();
   const res = await fetch(`${backend}/portfolio/${encodeURIComponent(id)}`, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Cookie: `${ADMIN_COOKIE_NAME}=${token}`,
+    },
   });
   if (res.status === 204) {
     return new NextResponse(null, { status: 204 });

@@ -8,6 +8,7 @@ import { Palette, Hammer, Clock, CheckCircle, Users, Award, ScanEye } from "luci
 import { PageHeroCover } from "@/components/layout/PageHeroCover";
 import { MarketingCtaCover } from "@/components/layout/MarketingCtaCover";
 import { ConsultationRequestDialog } from "@/components/ConsultationRequestDialog";
+import { ConsultationTriggerButton } from "@/components/ConsultationTriggerButton";
 
 const SERVICES_HERO_BG = "/order-bg.jpg";
 const SERVICES_CTA_BG = "/portfolio-header.jpg";
@@ -247,7 +248,7 @@ const Services = () => {
           actions={
             <ConsultationRequestDialog
               title="Получить консультацию"
-              trigger={<Button variant="default" size="lg">Получить консультацию</Button>}
+              trigger={<ConsultationTriggerButton>Получить консультацию</ConsultationTriggerButton>}
             />
           }
         />

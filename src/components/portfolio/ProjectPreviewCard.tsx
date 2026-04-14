@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Project } from "@/types/project";
-import { getProjectCardImageSrc } from "@/lib/api";
+import { FALLBACK_PROJECT_IMAGE, isValidImagePath } from "@/lib/api";
 
 type ProjectPreviewCardProps = {
   project: Project;
@@ -10,7 +10,9 @@ type ProjectPreviewCardProps = {
 };
 
 export function ProjectPreviewCard({ project, imageSizes }: ProjectPreviewCardProps) {
-  const imageSrc = getProjectCardImageSrc(project);
+  const imageSrc = isValidImagePath(project.mainImages?.[0])
+    ? project.mainImages[0]
+    : FALLBACK_PROJECT_IMAGE;
 
   return (
     <Link href={`/portfolio/${project.id}`} className="block">

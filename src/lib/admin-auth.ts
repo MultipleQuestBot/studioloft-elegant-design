@@ -6,7 +6,7 @@ export const ADMIN_COOKIE_NAME = "studioloft_admin_session";
 export const getAdminCookieValue = () => process.env.ADMIN_COOKIE_VALUE || "authenticated";
 
 export async function verifyAdminSessionToken(token: string): Promise<boolean> {
-  const secret = process.env.ADMIN_JWT_SECRET;
+  const secret = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET;
   if (!secret || secret.length < 16) {
     return false;
   }
