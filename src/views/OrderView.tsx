@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { CheckCircle, Star } from "lucide-react";
 import { ContactInfo } from "@/components/ContactInfo";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import type { Project } from "@/types/project";
 import { ProjectPreviewCard } from "@/components/portfolio/ProjectPreviewCard";
+import { submitLeadRequest } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 type OrderViewProps = {
   projects: Project[];
@@ -38,9 +40,69 @@ function formatPhoneValue(value: string): string {
 }
 
 const Order = ({ projects }: OrderViewProps) => {
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState(PHONE_MASK_PREFIX);
   const [objectType, setObjectType] = useState("");
   const [customObjectType, setCustomObjectType] = useState("");
+  const [area, setArea] = useState("");
+  const [rooms, setRooms] = useState("");
+  const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!objectType) {
+      toast({ title: "Укажите тип объекта", variant: "destructive" });
+      return;
+    }
+    if (objectType === "other" && !customObjectType.trim()) {
+      toast({ title: "Уточните тип объекта", variant: "destructive" });
+      return;
+    }
+
+    const phoneDigits = phone.replace(/\D/g, "");
+    const phoneForApi =
+      phoneDigits.length >= 10 ? `+${phoneDigits.startsWith("7") ? phoneDigits : `7${phoneDigits}`}` : null;
+    const emailTrim = email.trim();
+    const emailForApi = emailTrim.length > 0 ? emailTrim : null;
+
+    if (!phoneForApi && !emailForApi) {
+      toast({ title: "Укажите телефон или email", variant: "destructive" });
+      return;
+    }
+
+    const areaNum = area.trim() ? Number.parseInt(area, 10) : Number.NaN;
+    const roomsNum = rooms.trim() ? Number.parseInt(rooms, 10) : Number.NaN;
+
+    setIsSubmitting(true);
+    const ok = await submitLeadRequest({
+      name: name.trim(),
+      email: emailForApi,
+      phone_number: phoneForApi,
+      description: description.trim() || "Заявка с страницы заказа",
+      square_footage: Number.isFinite(areaNum) ? areaNum : null,
+      object_type: objectType === "other" ? customObjectType.trim() : objectType,
+      number_of_rooms: Number.isFinite(roomsNum) ? roomsNum : null,
+    });
+    setIsSubmitting(false);
+
+    if (!ok) {
+      toast({ title: "Не удалось отправить заявку", variant: "destructive" });
+      return;
+    }
+
+    toast({ title: "Заявка отправлена", description: "Мы свяжемся с вами в ближайшее время." });
+    setName("");
+    setEmail("");
+    setPhone(PHONE_MASK_PREFIX);
+    setObjectType("");
+    setCustomObjectType("");
+    setArea("");
+    setRooms("");
+    setDescription("");
+  }
 
   const packageFeatures = [
     "Планировочное решение",
@@ -127,11 +189,18 @@ const Order = ({ projects }: OrderViewProps) => {
                 </p>
               </CardHeader>
               <CardContent className="p-6">
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="name">Имя *</Label>
-                      <Input id="name" placeholder="Ваше имя" className="mt-1" />
+                      <Input
+                        id="name"
+                        placeholder="Ваше имя"
+                        className="mt-1"
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="phone">Телефон *</Label>
@@ -148,7 +217,14 @@ const Order = ({ projects }: OrderViewProps) => {
 
                   <div>
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your@email.com" className="mt-1" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      className="mt-1"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
 
                   <div>
@@ -189,25 +265,41 @@ const Order = ({ projects }: OrderViewProps) => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="area">Площадь (м²)</Label>
-                      <Input id="area" placeholder="100" className="mt-1" />
+                      <Input
+                        id="area"
+                        placeholder="100"
+                        className="mt-1"
+                        inputMode="numeric"
+                        value={area}
+                        onChange={(e) => setArea(e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="rooms">Количество комнат</Label>
-                      <Input id="rooms" placeholder="3" className="mt-1" />
+                      <Input
+                        id="rooms"
+                        placeholder="3"
+                        className="mt-1"
+                        inputMode="numeric"
+                        value={rooms}
+                        onChange={(e) => setRooms(e.target.value)}
+                      />
                     </div>
                   </div>
 
                   <div>
                     <Label htmlFor="description">Описание проекта</Label>
-                    <Textarea 
-                      id="description" 
+                    <Textarea
+                      id="description"
                       placeholder="Расскажите о ваших пожеланиях, стиле, особенностях..."
                       className="mt-1 h-24"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" size="lg">
-                    Отправить заявку
+                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                    {isSubmitting ? "Отправка..." : "Отправить заявку"}
                   </Button>
                 </form>
               </CardContent>

@@ -649,6 +649,9 @@ video {
 .invisible {
   visibility: hidden;
 }
+.static {
+  position: static;
+}
 .fixed {
   position: fixed;
 }
@@ -1000,6 +1003,9 @@ video {
 }
 .min-h-32 {
   min-height: 8rem;
+}
+.min-h-\[100px\] {
+  min-height: 100px;
 }
 .min-h-\[280px\] {
   min-height: 280px;

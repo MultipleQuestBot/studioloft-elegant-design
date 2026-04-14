@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
@@ -12,16 +12,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 const Admin = () => {
   const router = useRouter();
-  const [uploadStep, setUploadStep] = useState<'form' | 'success'>('form');
+  const { toast } = useToast();
+  const [uploadStep, setUploadStep] = useState<"form" | "success">("form");
   const [description, setDescription] = useState("");
   const [descriptionMode, setDescriptionMode] = useState<"edit" | "preview">("edit");
-  const [mainProjectImages, setMainProjectImages] = useState<File[]>([]);
-  const [projectGalleryImages, setProjectGalleryImages] = useState<File[]>([]);
-  const { toast } = useToast();
+  const [projectTitle, setProjectTitle] = useState("");
+  const [projectType, setProjectType] = useState("");
+  const [area, setArea] = useState("");
+  const [rooms, setRooms] = useState("");
+  const [style, setStyle] = useState("");
+  const [mainPathsText, setMainPathsText] = useState("");
+  const [galleryPathsText, setGalleryPathsText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleLogout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -29,16 +34,65 @@ const Admin = () => {
     router.refresh();
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setUploadStep('success');
-    toast({
-      title: "Проект отправлен!",
-      description: "Мы рассмотрим вашу заявку и свяжемся с вами в течение 2-3 дней.",
-    });
-  };
+  function pathsFromText(text: string): string[] {
+    return text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+  }
 
-  if (uploadStep === 'success') {
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    const mainImages = pathsFromText(mainPathsText);
+    const images = pathsFromText(galleryPathsText);
+    const areaNum = area.trim() ? Number.parseInt(area, 10) : Number.NaN;
+    const roomsNum = rooms.trim() ? Number.parseInt(rooms, 10) : Number.NaN;
+
+    if (!projectType) {
+      toast({ title: "Выберите тип объекта", variant: "destructive" });
+      return;
+    }
+    if (mainImages.length === 0) {
+      toast({ title: "Добавьте хотя бы один путь к главному изображению", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    const res = await fetch("/api/admin/portfolio", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: projectTitle.trim(),
+        type: projectType,
+        rooms: Number.isFinite(roomsNum) ? roomsNum : 0,
+        area: Number.isFinite(areaNum) ? areaNum : 0,
+        style: style.trim(),
+        description: description.trim(),
+        mainImages,
+        images,
+      }),
+    });
+    setIsSubmitting(false);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      toast({
+        title: "Ошибка сохранения",
+        description: errText.slice(0, 200) || `Код ${res.status}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadStep("success");
+    toast({
+      title: "Проект сохранён",
+      description: "Проект добавлен в портфолио.",
+    });
+  }
+
+  if (uploadStep === "success") {
     return (
       <div className="min-h-screen pt-16 flex items-center justify-center">
         <div className="max-w-md mx-auto px-4 text-center">
@@ -47,18 +101,26 @@ const Admin = () => {
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Plus className="h-8 w-8 text-primary" />
               </div>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">
-                Заявка отправлена!
-              </h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">Проект добавлен</h2>
               <p className="text-muted-foreground mb-6">
-                Спасибо за интерес к нашему портфолио. Мы рассмотрим ваш проект и свяжемся с вами в ближайшие дни.
+                Данные сохранены на сервере и доступны в портфолио.
               </p>
-              <Button 
-                onClick={() => setUploadStep('form')} 
-                variant="outline" 
+              <Button
+                onClick={() => {
+                  setUploadStep("form");
+                  setProjectTitle("");
+                  setProjectType("");
+                  setArea("");
+                  setRooms("");
+                  setStyle("");
+                  setDescription("");
+                  setMainPathsText("");
+                  setGalleryPathsText("");
+                }}
+                variant="outline"
                 className="w-full"
               >
-                Отправить еще один проект
+                Добавить ещё один проект
               </Button>
             </CardContent>
           </Card>
@@ -69,7 +131,6 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen pt-16">
-      {/* Header */}
       <section className="py-14 bg-gradient-subtle">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl md:text-4xl font-display font-semibold text-foreground">
@@ -90,13 +151,17 @@ const Admin = () => {
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <Badge variant="secondary" className="mb-2">Фотографии</Badge>
+                  <Badge variant="secondary" className="mb-2">
+                    Изображения
+                  </Badge>
                   <p className="text-sm text-muted-foreground">
-                    5-15 качественных фото интерьера в высоком разрешении
+                    Укажите публичные URL или пути (например /portfolio/image.jpg), по одному на строку.
                   </p>
                 </div>
                 <div>
-                  <Badge variant="secondary" className="mb-2">Описание</Badge>
+                  <Badge variant="secondary" className="mb-2">
+                    Описание
+                  </Badge>
                   <p className="text-sm text-muted-foreground">
                     Поддерживается markdown: #, ##, **жирный**, *курсив*
                   </p>
@@ -111,33 +176,30 @@ const Admin = () => {
           <div className="lg:col-span-2">
             <Card className="shadow-elegant">
               <CardHeader>
-                <CardTitle className="text-2xl font-display">
-                  Форма подачи проекта
-                </CardTitle>
+                <CardTitle className="text-2xl font-display">Форма подачи проекта</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Project Info */}
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Информация о проекте
-                    </h3>
-                    
+                    <h3 className="text-lg font-semibold text-foreground">Информация о проекте</h3>
+
                     <div>
                       <Label htmlFor="project-title">Название проекта *</Label>
-                      <Input 
-                        id="project-title" 
-                        placeholder="Например: Современная квартира в центре города" 
-                        className="mt-1" 
+                      <Input
+                        id="project-title"
+                        placeholder="Например: Современная квартира в центре города"
+                        className="mt-1"
                         required
+                        value={projectTitle}
+                        onChange={(event) => setProjectTitle(event.target.value)}
                       />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="project-type">Тип объекта *</Label>
-                        <Select required>
-                          <SelectTrigger className="mt-1">
+                        <Select required value={projectType} onValueChange={setProjectType}>
+                          <SelectTrigger id="project-type" className="mt-1">
                             <SelectValue placeholder="Выберите тип" />
                           </SelectTrigger>
                           <SelectContent>
@@ -150,22 +212,41 @@ const Admin = () => {
                       </div>
                       <div>
                         <Label htmlFor="area">Площадь (м²) *</Label>
-                        <Input 
-                          id="area" 
-                          placeholder="85" 
-                          className="mt-1" 
+                        <Input
+                          id="area"
+                          placeholder="85"
+                          className="mt-1"
                           required
+                          inputMode="numeric"
+                          value={area}
+                          onChange={(event) => setArea(event.target.value)}
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <Label htmlFor="style">Стиль интерьера</Label>
-                      <Input 
-                        id="style" 
-                        placeholder="Например: скандинавский, лофт, классический" 
-                        className="mt-1" 
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="rooms">Количество комнат *</Label>
+                        <Input
+                          id="rooms"
+                          placeholder="3"
+                          className="mt-1"
+                          required
+                          inputMode="numeric"
+                          value={rooms}
+                          onChange={(event) => setRooms(event.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="style">Стиль интерьера</Label>
+                        <Input
+                          id="style"
+                          placeholder="Например: скандинавский, лофт"
+                          className="mt-1"
+                          value={style}
+                          onChange={(event) => setStyle(event.target.value)}
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-3">
@@ -191,7 +272,7 @@ const Admin = () => {
                       {descriptionMode === "edit" ? (
                         <Textarea
                           id="description"
-                          placeholder="Расскажите об особенностях проекта, использованных материалах, цветовых решениях..."
+                          placeholder="Расскажите об особенностях проекта..."
                           className="mt-1 h-32"
                           required
                           value={description}
@@ -199,31 +280,39 @@ const Admin = () => {
                         />
                       ) : (
                         <div className="min-h-32 rounded-md border border-input p-3 prose prose-sm max-w-none">
-                          <ReactMarkdown>{description || "*Начните вводить описание, чтобы увидеть предпросмотр.*"}</ReactMarkdown>
+                          <ReactMarkdown>
+                            {description || "*Начните вводить описание, чтобы увидеть предпросмотр.*"}
+                          </ReactMarkdown>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <ImageUploadField
-                    id="main-images"
-                    title="Главные фотографии проекта"
-                    description="Загрузите главные изображения проекта. Можно выбрать несколько файлов."
-                    files={mainProjectImages}
-                    onChange={setMainProjectImages}
-                  />
+                  <div>
+                    <Label htmlFor="main-images-paths">Главные изображения (пути) *</Label>
+                    <Textarea
+                      id="main-images-paths"
+                      className="mt-1 font-mono text-sm min-h-[100px]"
+                      placeholder={"/hero.jpg\n/hero-2.jpg"}
+                      value={mainPathsText}
+                      onChange={(e) => setMainPathsText(e.target.value)}
+                    />
+                  </div>
 
-                  <ImageUploadField
-                    id="gallery-images"
-                    title="Фотографии проекта"
-                    description="Поддерживаются форматы: JPG, PNG. Максимум 15 файлов."
-                    files={projectGalleryImages}
-                    onChange={setProjectGalleryImages}
-                  />
+                  <div>
+                    <Label htmlFor="gallery-paths">Галерея (пути)</Label>
+                    <Textarea
+                      id="gallery-paths"
+                      className="mt-1 font-mono text-sm min-h-[100px]"
+                      placeholder={"/gallery/1.jpg\n/gallery/2.jpg"}
+                      value={galleryPathsText}
+                      onChange={(e) => setGalleryPathsText(e.target.value)}
+                    />
+                  </div>
 
                   <div className="pt-6 border-t">
-                    <Button type="submit" className="w-full" size="lg">
-                      Отправить
+                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                      {isSubmitting ? "Сохранение..." : "Сохранить проект"}
                     </Button>
                   </div>
                 </form>

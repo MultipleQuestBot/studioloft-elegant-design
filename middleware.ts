@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { ADMIN_COOKIE_NAME, getAdminCookieValue } from "@/lib/admin-auth";
+import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/admin-auth";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const loginPath = "/admin/login";
   const sessionValue = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-  const isAuthenticated = sessionValue === getAdminCookieValue();
+  const isAuthenticated = sessionValue ? await verifyAdminSessionToken(sessionValue) : false;
 
   if (pathname === loginPath) {
     if (isAuthenticated) {

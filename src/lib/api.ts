@@ -8,8 +8,8 @@ const stringOrEmpty = (value: unknown) => (typeof value === "string" ? value : "
 const numberOrZero = (value: unknown) => (typeof value === "number" ? value : 0);
 
 function normalizeProject(raw: RawProject): Project {
-  const rawMainImages = raw.mainImages;
-  const rawImages = raw.images;
+  const rawMainImages = raw.mainImages ?? raw.main_project_images;
+  const rawImages = raw.images ?? raw.all_images;
 
   const mainImages = Array.isArray(rawMainImages)
     ? rawMainImages.filter((item): item is string => typeof item === "string")
@@ -19,19 +19,26 @@ function normalizeProject(raw: RawProject): Project {
     ? rawImages.filter((item): item is string => typeof item === "string")
     : [];
 
+  const name = stringOrEmpty(raw.name || raw.title || raw.project_name);
+  const rooms = numberOrZero(raw.rooms ?? raw.number_of_rooms);
+  const area = numberOrZero(raw.area ?? raw.square_footage);
+  const created =
+    stringOrEmpty(raw.createdAt || raw.created_at || raw.project_publication_date) ||
+    new Date().toISOString();
+
   return {
     id:
       stringOrEmpty(raw.id) ||
-      `${stringOrEmpty(raw.name || raw.title)}-${stringOrEmpty(raw.createdAt || raw.created_at)}`,
-    name: stringOrEmpty(raw.name || raw.title),
-    type: (stringOrEmpty(raw.type || raw.category) as Project["type"]) || "apartment",
-    rooms: numberOrZero(raw.rooms),
-    area: numberOrZero(raw.area),
-    style: stringOrEmpty(raw.style),
+      `${name}-${created}`,
+    name,
+    type: (stringOrEmpty(raw.type || raw.category || raw.project_type) as Project["type"]) || "apartment",
+    rooms,
+    area,
+    style: stringOrEmpty(raw.style || raw.project_style),
     description: stringOrEmpty(raw.description || raw.summary),
     mainImages: mainImages.length > 0 ? mainImages : images.slice(0, 1),
     images,
-    createdAt: stringOrEmpty(raw.createdAt || raw.created_at),
+    createdAt: created,
   };
 }
 
@@ -80,6 +87,30 @@ export async function getProjects(query: ProjectsQuery = {}): Promise<ProjectsRe
     return { items: [], hasMore: false };
   } catch {
     return { items: [], hasMore: false };
+  }
+}
+
+export type LeadRequestPayload = {
+  name: string;
+  email: string | null;
+  phone_number: string | null;
+  description: string;
+  square_footage: number | null;
+  object_type: string | null;
+  number_of_rooms: number | null;
+};
+
+/** Client-only: posts to Next.js `/api/requests`, which proxies to FastAPI. */
+export async function submitLeadRequest(payload: LeadRequestPayload): Promise<boolean> {
+  try {
+    const res = await fetch("/api/requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { submitLeadRequest } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 type ConsultationRequestDialogProps = {
   title?: string;
@@ -16,6 +18,7 @@ export function ConsultationRequestDialog({
   title = "Консультация",
   trigger,
 }: ConsultationRequestDialogProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [name, setName] = useState("");
@@ -26,13 +29,24 @@ export function ConsultationRequestDialog({
     event.preventDefault();
     setIsSubmitting(true);
 
-    await fetch("/api/portfolio-feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, contact, description }),
+    const t = contact.trim();
+    const email = t.includes("@") ? t : null;
+    const phone_number = t.includes("@") ? null : t;
+    const ok = await submitLeadRequest({
+      name: name.trim(),
+      email,
+      phone_number,
+      description: description.trim(),
+      square_footage: null,
+      object_type: null,
+      number_of_rooms: null,
     });
 
     setIsSubmitting(false);
+    if (!ok) {
+      toast({ title: "Не удалось отправить", variant: "destructive" });
+      return;
+    }
     setOpen(false);
     setName("");
     setContact("");
