@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { submitLeadRequest } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { parseContactInput } from "@/lib/contact";
+import { formatPhoneValue } from "@/lib/phone";
 
 type ConsultationRequestDialogProps = {
   title?: string;
@@ -29,9 +31,13 @@ export function ConsultationRequestDialog({
     event.preventDefault();
     setIsSubmitting(true);
 
-    const t = contact.trim();
-    const email = t.includes("@") ? t : null;
-    const phone_number = t.includes("@") ? null : t;
+    const { email, phone_number } = parseContactInput(contact);
+    if (!email && !phone_number) {
+      setIsSubmitting(false);
+      toast({ title: "Укажите корректный телефон или email", variant: "destructive" });
+      return;
+    }
+
     const ok = await submitLeadRequest({
       name: name.trim(),
       email,
@@ -76,9 +82,12 @@ export function ConsultationRequestDialog({
               id="consultation-contact"
               required
               type="text"
-              autoComplete="email"
+              autoComplete="tel"
               value={contact}
-              onChange={(event) => setContact(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setContact(value.includes("@") ? value : formatPhoneValue(value));
+              }}
             />
           </div>
           <div className="space-y-2">

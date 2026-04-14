@@ -1,37 +1,28 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useRef } from "react";
 import Image from "next/image";
-import { Upload, Image as ImageIcon } from "lucide-react";
+import { Upload, Image as ImageIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type ImageUploadFieldProps = {
   id: string;
   title: string;
   description: string;
-  files: File[];
-  onChange: (files: File[]) => void;
+  paths: string[];
+  onUpload: (files: File[]) => Promise<void>;
+  onRemovePath: (path: string) => void;
 };
 
 export function ImageUploadField({
   id,
   title,
   description,
-  files,
-  onChange,
+  paths,
+  onUpload,
+  onRemovePath,
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const previews = useMemo(
-    () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
-    [files],
-  );
-
-  useEffect(() => {
-    return () => {
-      previews.forEach((preview) => URL.revokeObjectURL(preview.url));
-    };
-  }, [previews]);
-
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-foreground">{title}</h3>
@@ -50,7 +41,8 @@ export function ImageUploadField({
           className="hidden"
           onChange={(event) => {
             const selectedFiles = Array.from(event.target.files || []);
-            onChange(selectedFiles);
+            void onUpload(selectedFiles);
+            event.currentTarget.value = "";
           }}
         />
         <Button
@@ -64,17 +56,26 @@ export function ImageUploadField({
         </Button>
       </div>
 
-      {previews.length > 0 ? (
+      {paths.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {previews.map((preview) => (
-            <div key={`${preview.file.name}-${preview.file.lastModified}`} className="relative aspect-square rounded-md overflow-hidden border">
+          {paths.map((path) => (
+            <div key={path} className="relative aspect-square rounded-md overflow-hidden border">
               <Image
-                src={preview.url}
-                alt={preview.file.name}
+                src={path}
+                alt={title}
                 fill
-                unoptimized
                 className="object-cover"
               />
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                className="absolute right-2 top-2 h-7 w-7"
+                onClick={() => onRemovePath(path)}
+                aria-label="Удалить изображение"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           ))}
         </div>

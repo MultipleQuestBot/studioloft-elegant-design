@@ -3,20 +3,34 @@ import type { Project, ProjectsQuery, ProjectsResponse } from "@/types/project";
 const BACKEND_URL = process.env.NEXT_PUBLIC_PATH_BACKEND || "http://localhost:8000";
 
 type RawProject = Record<string, unknown>;
+const FALLBACK_PROJECT_IMAGE = "/portfolio-header.jpg";
 
 const stringOrEmpty = (value: unknown) => (typeof value === "string" ? value : "");
 const numberOrZero = (value: unknown) => (typeof value === "number" ? value : 0);
+const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value);
+
+export function isValidImagePath(value: unknown): value is string {
+  return typeof value === "string" && (value.startsWith("/") || isAbsoluteHttpUrl(value));
+}
+
+export function getProjectCardImageSrc(project: Project): string {
+  const firstValidMain = project.mainImages.find(isValidImagePath);
+  if (firstValidMain) return firstValidMain;
+  const firstValidGallery = project.images.find(isValidImagePath);
+  if (firstValidGallery) return firstValidGallery;
+  return FALLBACK_PROJECT_IMAGE;
+}
 
 function normalizeProject(raw: RawProject): Project {
   const rawMainImages = raw.mainImages ?? raw.main_project_images;
   const rawImages = raw.images ?? raw.all_images;
 
   const mainImages = Array.isArray(rawMainImages)
-    ? rawMainImages.filter((item): item is string => typeof item === "string")
+    ? rawMainImages.filter(isValidImagePath)
     : [];
 
   const images = Array.isArray(rawImages)
-    ? rawImages.filter((item): item is string => typeof item === "string")
+    ? rawImages.filter(isValidImagePath)
     : [];
 
   const name = stringOrEmpty(raw.name || raw.title || raw.project_name);

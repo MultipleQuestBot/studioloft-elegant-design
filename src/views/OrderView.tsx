@@ -14,36 +14,18 @@ import type { Project } from "@/types/project";
 import { ProjectPreviewCard } from "@/components/portfolio/ProjectPreviewCard";
 import { submitLeadRequest } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { formatPhoneValue, getPhoneMaskPrefix, normalizePhoneToApi } from "@/lib/phone";
 
 type OrderViewProps = {
   projects: Project[];
 };
 
-const PHONE_MASK_PREFIX = "+7 ";
-
-function formatPhoneValue(value: string): string {
-  const digits = value.replace(/\D/g, "");
-  const normalized = digits.startsWith("7") ? digits.slice(1, 11) : digits.slice(0, 10);
-
-  if (normalized.length === 0) return PHONE_MASK_PREFIX;
-
-  let result = `${PHONE_MASK_PREFIX}(`;
-  result += normalized.slice(0, 3);
-  if (normalized.length >= 3) result += ") ";
-  if (normalized.length > 3) result += normalized.slice(3, 6);
-  if (normalized.length >= 6) result += "-";
-  if (normalized.length > 6) result += normalized.slice(6, 8);
-  if (normalized.length >= 8) result += "-";
-  if (normalized.length > 8) result += normalized.slice(8, 10);
-
-  return result;
-}
-
 const Order = ({ projects }: OrderViewProps) => {
   const { toast } = useToast();
+  const phoneMaskPrefix = getPhoneMaskPrefix();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState(PHONE_MASK_PREFIX);
+  const [phone, setPhone] = useState(phoneMaskPrefix);
   const [objectType, setObjectType] = useState("");
   const [customObjectType, setCustomObjectType] = useState("");
   const [area, setArea] = useState("");
@@ -62,9 +44,7 @@ const Order = ({ projects }: OrderViewProps) => {
       return;
     }
 
-    const phoneDigits = phone.replace(/\D/g, "");
-    const phoneForApi =
-      phoneDigits.length >= 10 ? `+${phoneDigits.startsWith("7") ? phoneDigits : `7${phoneDigits}`}` : null;
+    const phoneForApi = normalizePhoneToApi(phone);
     const emailTrim = email.trim();
     const emailForApi = emailTrim.length > 0 ? emailTrim : null;
 
@@ -96,7 +76,7 @@ const Order = ({ projects }: OrderViewProps) => {
     toast({ title: "Заявка отправлена", description: "Мы свяжемся с вами в ближайшее время." });
     setName("");
     setEmail("");
-    setPhone(PHONE_MASK_PREFIX);
+    setPhone(phoneMaskPrefix);
     setObjectType("");
     setCustomObjectType("");
     setArea("");
@@ -165,12 +145,12 @@ const Order = ({ projects }: OrderViewProps) => {
               <h3 className="text-2xl font-display font-semibold text-foreground mb-6">
                 Примеры реализованных решений
               </h3>
-              <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {projects.map((project) => (
                   <ProjectPreviewCard
                     key={project.id}
                     project={project}
-                    imageSizes="(max-width: 1024px) 100vw, 50vw"
+                    imageSizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
                   />
                 ))}
               </div>
@@ -298,7 +278,12 @@ const Order = ({ projects }: OrderViewProps) => {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    className="w-full hover:bg-primary hover:saturate-150 hover:brightness-110"
+                    size="lg"
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? "Отправка..." : "Отправить заявку"}
                   </Button>
                 </form>

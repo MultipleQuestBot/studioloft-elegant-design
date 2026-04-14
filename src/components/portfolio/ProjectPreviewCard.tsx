@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Project } from "@/types/project";
+import { getProjectCardImageSrc } from "@/lib/api";
 
 type ProjectPreviewCardProps = {
   project: Project;
@@ -9,19 +10,19 @@ type ProjectPreviewCardProps = {
 };
 
 export function ProjectPreviewCard({ project, imageSizes }: ProjectPreviewCardProps) {
+  const imageSrc = getProjectCardImageSrc(project);
+
   return (
     <Link href={`/portfolio/${project.id}`} className="block">
       <Card className="group shadow-soft hover:shadow-elegant transition-all duration-300 cursor-pointer overflow-hidden">
         <div className="aspect-[4/3] bg-muted relative overflow-hidden">
-          {project.mainImages[0] ? (
-            <Image
-              src={project.mainImages[0]}
-              alt={project.name}
-              fill
-              sizes={imageSizes}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : null}
+          <Image
+            src={imageSrc}
+            alt={project.name}
+            fill
+            sizes={imageSizes}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-all duration-300 flex items-center justify-center">
             <span className="opacity-0 group-hover:opacity-100 text-white text-lg font-medium transition-opacity duration-300">
               Подробнее

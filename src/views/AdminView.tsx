@@ -12,10 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 const Admin = () => {
   const router = useRouter();
   const { toast } = useToast();
+  const publicBackendBase = process.env.NEXT_PUBLIC_PATH_BACKEND || "";
   const [uploadStep, setUploadStep] = useState<"form" | "success">("form");
   const [description, setDescription] = useState("");
   const [descriptionMode, setDescriptionMode] = useState<"edit" | "preview">("edit");
@@ -24,8 +26,10 @@ const Admin = () => {
   const [area, setArea] = useState("");
   const [rooms, setRooms] = useState("");
   const [style, setStyle] = useState("");
-  const [mainPathsText, setMainPathsText] = useState("");
-  const [galleryPathsText, setGalleryPathsText] = useState("");
+  const [mainImages, setMainImages] = useState<string[]>([]);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [isUploadingMain, setIsUploadingMain] = useState(false);
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleLogout() {
@@ -34,17 +38,52 @@ const Admin = () => {
     router.refresh();
   }
 
-  function pathsFromText(text: string): string[] {
-    return text
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
+  async function uploadImages(files: File[], target: "main" | "gallery") {
+    if (files.length === 0) return;
+    const hasInvalidFile = files.some((file) => !file.type.startsWith("image/"));
+    if (hasInvalidFile) {
+      toast({ title: "Можно загружать только изображения", variant: "destructive" });
+      return;
+    }
+
+    target === "main" ? setIsUploadingMain(true) : setIsUploadingGallery(true);
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("files", file);
+    }
+
+    try {
+      const res = await fetch("/api/admin/upload-images", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) {
+        const errorText = await res.text();
+        toast({
+          title: "Ошибка загрузки изображений",
+          description: errorText.slice(0, 200) || `Код ${res.status}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      const payload = (await res.json()) as { paths?: string[] };
+      const paths = Array.isArray(payload.paths) ? payload.paths : [];
+      const normalizedPaths = paths.map((path) =>
+        path.startsWith("/") && publicBackendBase ? `${publicBackendBase}${path}` : path,
+      );
+      if (target === "main") {
+        setMainImages((prev) => [...prev, ...normalizedPaths]);
+      } else {
+        setGalleryImages((prev) => [...prev, ...normalizedPaths]);
+      }
+    } finally {
+      target === "main" ? setIsUploadingMain(false) : setIsUploadingGallery(false);
+    }
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const mainImages = pathsFromText(mainPathsText);
-    const images = pathsFromText(galleryPathsText);
     const areaNum = area.trim() ? Number.parseInt(area, 10) : Number.NaN;
     const roomsNum = rooms.trim() ? Number.parseInt(rooms, 10) : Number.NaN;
 
@@ -114,8 +153,8 @@ const Admin = () => {
                   setRooms("");
                   setStyle("");
                   setDescription("");
-                  setMainPathsText("");
-                  setGalleryPathsText("");
+                  setMainImages([]);
+                  setGalleryImages([]);
                 }}
                 variant="outline"
                 className="w-full"
@@ -155,7 +194,7 @@ const Admin = () => {
                     Изображения
                   </Badge>
                   <p className="text-sm text-muted-foreground">
-                    Укажите публичные URL или пути (например /portfolio/image.jpg), по одному на строку.
+                    Загрузите изображения через системный выбор файлов. После загрузки пути добавятся автоматически.
                   </p>
                 </div>
                 <div>
@@ -288,30 +327,39 @@ const Admin = () => {
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="main-images-paths">Главные изображения (пути) *</Label>
-                    <Textarea
-                      id="main-images-paths"
-                      className="mt-1 font-mono text-sm min-h-[100px]"
-                      placeholder={"/hero.jpg\n/hero-2.jpg"}
-                      value={mainPathsText}
-                      onChange={(e) => setMainPathsText(e.target.value)}
-                    />
-                  </div>
+                  <ImageUploadField
+                    id="main-images-upload"
+                    title="Главные изображения (пути)"
+                    description={
+                      isUploadingMain
+                        ? "Загрузка..."
+                        : "Загрузите 1+ изображения. Можно удалить из списка перед сохранением."
+                    }
+                    paths={mainImages}
+                    onUpload={(files) => uploadImages(files, "main")}
+                    onRemovePath={(path) => setMainImages((prev) => prev.filter((item) => item !== path))}
+                  />
 
-                  <div>
-                    <Label htmlFor="gallery-paths">Галерея (пути)</Label>
-                    <Textarea
-                      id="gallery-paths"
-                      className="mt-1 font-mono text-sm min-h-[100px]"
-                      placeholder={"/gallery/1.jpg\n/gallery/2.jpg"}
-                      value={galleryPathsText}
-                      onChange={(e) => setGalleryPathsText(e.target.value)}
-                    />
-                  </div>
+                  <ImageUploadField
+                    id="gallery-images-upload"
+                    title="Галерея (пути)"
+                    description={
+                      isUploadingGallery
+                        ? "Загрузка..."
+                        : "Загрузите дополнительные изображения. Можно удалить в любой момент."
+                    }
+                    paths={galleryImages}
+                    onUpload={(files) => uploadImages(files, "gallery")}
+                    onRemovePath={(path) => setGalleryImages((prev) => prev.filter((item) => item !== path))}
+                  />
 
                   <div className="pt-6 border-t">
-                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      size="lg"
+                      disabled={isSubmitting || isUploadingMain || isUploadingGallery}
+                    >
                       {isSubmitting ? "Сохранение..." : "Сохранить проект"}
                     </Button>
                   </div>

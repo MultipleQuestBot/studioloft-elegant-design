@@ -1,13 +1,15 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { ADMIN_COOKIE_NAME } from "@/lib/admin-auth";
+import { ADMIN_COOKIE_NAME, verifyAdminSessionToken } from "@/lib/admin-auth";
 import { getBackendBaseUrl } from "@/lib/backend";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 async function getToken() {
   const cookieStore = await cookies();
-  return cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) return null;
+  return (await verifyAdminSessionToken(token)) ? token : null;
 }
 
 export async function PUT(request: Request, context: RouteContext) {
