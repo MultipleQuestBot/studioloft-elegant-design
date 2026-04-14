@@ -13,6 +13,12 @@ export function isValidImagePath(value: unknown): value is string {
   return typeof value === "string" && (value.startsWith("/") || isAbsoluteHttpUrl(value));
 }
 
+function toAbsoluteBackendImagePath(path: string): string {
+  if (!path.startsWith("/static/")) return path;
+  const base = BACKEND_URL.replace(/\/+$/, "");
+  return `${base}${path}`;
+}
+
 export function getProjectCardImageSrc(project: Project): string {
   const mainImage = project.mainImages?.[0];
   if (isValidImagePath(mainImage)) return mainImage;
@@ -24,11 +30,11 @@ function normalizeProject(raw: RawProject): Project {
   const rawImages = raw.images ?? raw.all_images;
 
   const mainImages = Array.isArray(rawMainImages)
-    ? rawMainImages.filter(isValidImagePath)
+    ? rawMainImages.filter(isValidImagePath).map(toAbsoluteBackendImagePath)
     : [];
 
   const images = Array.isArray(rawImages)
-    ? rawImages.filter(isValidImagePath)
+    ? rawImages.filter(isValidImagePath).map(toAbsoluteBackendImagePath)
     : [];
 
   const name = stringOrEmpty(raw.name || raw.title || raw.project_name);

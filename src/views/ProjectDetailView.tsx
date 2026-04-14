@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ContactFormDialog from "@/components/ContactFormDialog";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/carousel";
 import type { Project } from "@/types/project";
 import { FALLBACK_PROJECT_IMAGE, isValidImagePath } from "@/lib/api";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 type ProjectDetailProps = {
   id?: string;
@@ -111,9 +111,7 @@ const ProjectDetail = ({ initialProject }: ProjectDetailProps) => {
               <span>{type}</span>
               <span>{rooms} комнаты</span>
             </div>
-            <div className="prose prose-neutral max-w-none text-muted-foreground md:prose-lg">
-              <ReactMarkdown>{description}</ReactMarkdown>
-            </div>
+            <MarkdownRenderer content={description} className="md:prose-lg" />
           </div>
         </div>
       </section>

@@ -1,11 +1,11 @@
 import imghdr
 import uuid
-from pathlib import Path
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
 from app.api.deps import AdminUser
+from app.core.paths import get_static_images_dir
 
 router = APIRouter(prefix="/upload-images", tags=["upload"])
 
@@ -31,8 +31,7 @@ async def upload_images(
     if not files:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No files provided")
 
-    base_dir = Path(__file__).resolve().parents[2]
-    upload_dir = base_dir / "static" / "images"
+    upload_dir = get_static_images_dir()
     upload_dir.mkdir(parents=True, exist_ok=True)
 
     saved_paths: list[str] = []

@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 const Admin = () => {
   const router = useRouter();
@@ -318,10 +318,11 @@ const Admin = () => {
                           onChange={(event) => setDescription(event.target.value)}
                         />
                       ) : (
-                        <div className="min-h-32 rounded-md border border-input p-3 prose prose-sm max-w-none">
-                          <ReactMarkdown>
-                            {description || "*Начните вводить описание, чтобы увидеть предпросмотр.*"}
-                          </ReactMarkdown>
+                        <div className="min-h-32 rounded-md border border-input p-3 max-w-full overflow-hidden">
+                          <MarkdownRenderer
+                            content={description || "*Начните вводить описание, чтобы увидеть предпросмотр.*"}
+                            className="prose-sm"
+                          />
                         </div>
                       )}
                     </div>
