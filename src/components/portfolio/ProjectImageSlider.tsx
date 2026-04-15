@@ -12,14 +12,17 @@ import {
 type ProjectImageSliderProps = {
   images: string[];
   title: string;
+  showTitle?: boolean;
 };
 
-export function ProjectImageSlider({ images, title }: ProjectImageSliderProps) {
+export function ProjectImageSlider({ images, title, showTitle = true }: ProjectImageSliderProps) {
   return (
     <section>
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h2 className="mb-4 text-2xl font-semibold text-foreground md:text-3xl">{title}</h2>
-      </div>
+      {showTitle ? (
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 className="mb-4 text-2xl font-semibold text-foreground md:text-3xl">{title}</h2>
+        </div>
+      ) : null}
       <Carousel className="w-full">
         <CarouselContent className="-ml-0">
           {images.map((image, index) => (

@@ -5,6 +5,7 @@ import { FALLBACK_PROJECT_IMAGE, isValidImagePath } from "@/lib/api";
 import { ProjectBackButton } from "@/components/portfolio/ProjectBackButton";
 import { ProjectImageSlider } from "@/components/portfolio/ProjectImageSlider";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import { getProjectTypeLabel } from "@/lib/project-types";
 
 type ProjectDetailProps = {
   id?: string;
@@ -22,7 +23,7 @@ const ProjectDetail = ({ initialProject }: ProjectDetailProps) => {
       : mainImages;
   const title = initialProject?.name || "Проект";
   const description = initialProject?.description || "Описание проекта отсутствует.";
-  const type = initialProject?.type || "—";
+  const type = getProjectTypeLabel(initialProject?.type);
   const style = initialProject?.style || "—";
   const area = initialProject?.area ?? 0;
   const rooms = initialProject?.rooms ?? 0;
@@ -35,8 +36,7 @@ const ProjectDetail = ({ initialProject }: ProjectDetailProps) => {
         </div>
       </nav>
 
-      <div className="pt-16" />
-      <ProjectImageSlider images={mainImages} title="Главные изображения" />
+      <ProjectImageSlider images={mainImages} title="" showTitle={false} />
 
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-4">

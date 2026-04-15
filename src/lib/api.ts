@@ -25,7 +25,7 @@ export function getProjectCardImageSrc(project: Project): string {
   return FALLBACK_PROJECT_IMAGE;
 }
 
-function normalizeProject(raw: RawProject): Project {
+export function normalizeProject(raw: RawProject): Project {
   const rawMainImages = raw.mainImages ?? raw.main_project_images;
   const rawImages = raw.images ?? raw.all_images;
 
@@ -58,6 +58,93 @@ function normalizeProject(raw: RawProject): Project {
     images,
     createdAt: created,
   };
+}
+
+export async function listProjectsClient(limit = 100): Promise<Project[]> {
+  try {
+    const res = await fetch("/api/admin/portfolio-list", {
+      cache: "no-store",
+      credentials: "include",
+    });
+    // TEMP debug (remove later if noisy)
+    console.log("[admin] listProjectsClient status:", res.status);
+    if (!res.ok) return [];
+    const data = (await res.json()) as unknown;
+    if (typeof data === "object" && data !== null && Array.isArray((data as { items?: unknown[] }).items)) {
+      const payload = data as { items: RawProject[] };
+      return payload.items.slice(0, Math.min(limit, 100)).map(normalizeProject);
+    }
+    if (Array.isArray(data)) return data.slice(0, Math.min(limit, 100)).map((item) => normalizeProject(item as RawProject));
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export type AdminProjectUpsertPayload = {
+  name: string;
+  type: Project["type"];
+  rooms: number;
+  area: number;
+  style: string;
+  description: string;
+  mainImages: string[];
+  images: string[];
+};
+
+export async function adminCreateProject(payload: AdminProjectUpsertPayload): Promise<Response> {
+  return fetch("/api/admin/portfolio", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function adminUpdateProject(id: string, payload: AdminProjectUpsertPayload): Promise<Response> {
+  return fetch(`/api/admin/portfolio/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function adminDeleteProject(id: string): Promise<Response> {
+  return fetch(`/api/admin/portfolio/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+}
+
+export type AdminLeadRequest = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone_number: string | null;
+  description: string;
+  square_footage: number | null;
+  object_type: string | null;
+  number_of_rooms: number | null;
+  created_at: string;
+};
+
+export async function adminListRequests(): Promise<AdminLeadRequest[]> {
+  try {
+    const res = await fetch("/api/admin/requests", { credentials: "include", cache: "no-store" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as unknown;
+    return Array.isArray(data) ? (data as AdminLeadRequest[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function adminDeleteRequest(id: string): Promise<Response> {
+  return fetch(`/api/admin/requests/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
 }
 
 export async function getProjects(query: ProjectsQuery = {}): Promise<ProjectsResponse> {
