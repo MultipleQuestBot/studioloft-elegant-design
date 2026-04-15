@@ -1,10 +1,13 @@
-import { Link, useLocation } from "react-router-dom";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const Navigation = () => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -12,17 +15,16 @@ const Navigation = () => {
     { name: "Услуги", path: "/services" },
     { name: "Портфолио", path: "/portfolio" },
     { name: "Заказать", path: "/order" },
-    { name: "Админ", path: "/admin" }
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   return (
     <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-display font-semibold text-primary">
+          <Link href="/" className="text-2xl font-display font-semibold text-primary">
             studioloft
           </Link>
 
@@ -31,7 +33,7 @@ const Navigation = () => {
             {navItems.map((item) => (
               <Link
                 key={item.name}
-                to={item.path}
+                href={item.path}
                 className={`text-sm font-medium transition-colors ${
                   isActive(item.path)
                     ? "text-primary"
@@ -62,7 +64,7 @@ const Navigation = () => {
               {navItems.map((item) => (
                 <Link
                   key={item.name}
-                  to={item.path}
+                  href={item.path}
                   className={`block px-3 py-2 text-base font-medium transition-colors ${
                     isActive(item.path)
                       ? "text-primary bg-muted"
