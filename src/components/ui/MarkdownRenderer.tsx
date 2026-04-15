@@ -1,5 +1,8 @@
+"use client";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { MARKDOWN_CLASSNAME } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 
 type MarkdownRendererProps = {
@@ -9,22 +12,55 @@ type MarkdownRendererProps = {
 
 export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
-    <div
-      className={cn(
-        "prose prose-neutral max-w-full text-muted-foreground font-medium leading-relaxed break-words whitespace-pre-wrap",
-        "prose-headings:mt-6 prose-headings:mb-3 prose-headings:font-semibold prose-headings:text-foreground",
-        "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl",
-        "prose-p:my-4",
-        "prose-ul:my-4 prose-ul:list-disc prose-ul:pl-6",
-        "prose-ol:my-4 prose-ol:list-decimal prose-ol:pl-6",
-        "prose-li:my-1",
-        "prose-table:block prose-table:w-full prose-table:overflow-x-auto",
-        "prose-th:border prose-th:border-border prose-th:bg-muted/50 prose-th:px-3 prose-th:py-2 prose-th:text-left",
-        "prose-td:border prose-td:border-border prose-td:px-3 prose-td:py-2",
-        className,
-      )}
-    >
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+    <div className={cn(MARKDOWN_CLASSNAME, "max-w-full", className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          table: ({ children, ...props }) => (
+            <div className="my-6 w-full max-w-full overflow-x-auto">
+              <table className="w-full border-collapse text-left" {...props}>
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children, ...props }) => (
+            <thead className="bg-muted/40" {...props}>
+              {children}
+            </thead>
+          ),
+          th: ({ children, ...props }) => (
+            <th className="border border-border px-3 py-2 align-top font-semibold text-foreground" {...props}>
+              {children}
+            </th>
+          ),
+          td: ({ children, ...props }) => (
+            <td className="border border-border px-3 py-2 align-top" {...props}>
+              {children}
+            </td>
+          ),
+          blockquote: ({ children, ...props }) => (
+            <blockquote
+              className="my-6 border-l-4 border-border pl-4 italic text-muted-foreground"
+              {...props}
+            >
+              {children}
+            </blockquote>
+          ),
+          ul: ({ children, ...props }) => (
+            <ul className="my-4 list-disc pl-6" {...props}>
+              {children}
+            </ul>
+          ),
+          ol: ({ children, ...props }) => (
+            <ol className="my-4 list-decimal pl-6" {...props}>
+              {children}
+            </ol>
+          ),
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
+

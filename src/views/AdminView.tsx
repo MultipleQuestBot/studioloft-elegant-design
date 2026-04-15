@@ -318,10 +318,9 @@ const Admin = () => {
                           onChange={(event) => setDescription(event.target.value)}
                         />
                       ) : (
-                        <div className="min-h-32 rounded-md border border-input p-3 max-w-full overflow-hidden">
+                        <div className="min-h-32 rounded-md border border-input p-3 max-w-full overflow-x-auto">
                           <MarkdownRenderer
                             content={description || "*Начните вводить описание, чтобы увидеть предпросмотр.*"}
-                            className="prose-sm"
                           />
                         </div>
                       )}
