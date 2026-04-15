@@ -1,73 +1,98 @@
-# Welcome to your Lovable project
+# StudioLoft
 
-## Project info
+Production-ready fullstack setup:
 
-**URL**: https://lovable.dev/projects/ced2b652-b3be-426b-8912-92bc338b8c77
+- Frontend: Next.js (App Router, TypeScript, Tailwind, shadcn/ui)
+- Backend: FastAPI + SQLAlchemy + Pydantic + SQLite
+- Reverse proxy: Nginx (TLS termination, HTTP -> HTTPS redirect)
 
-## How can I edit this code?
+## Local Development
 
-There are several ways of editing your application.
+### Frontend
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/ced2b652-b3be-426b-8912-92bc338b8c77) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Backend
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-**Use GitHub Codespaces**
+## Deployment Guide
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### 1. Domain setup
 
-## What technologies are used for this project?
+- Point your DNS A/AAAA record for `your-domain.com` to your server IP.
+- Ensure inbound firewall rules allow ports `80` and `443`.
 
-This project is built with:
+### 2. Configure environment files
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Copy `.env.example` to `.env` and set:
+  - `NEXT_PUBLIC_PATH_BACKEND=https://your-domain.com/api`
+  - `BACKEND_URL=http://backend:8000`
+  - `NEXT_PUBLIC_SITE_URL=https://your-domain.com`
+- Copy `backend/.env.example` to `backend/.env` and set:
+  - `CORS_ORIGINS=https://your-domain.com`
+  - Strong values for `ADMIN_PASSWORD` and `JWT_SECRET`
 
-## How can I deploy this project?
+### 3. Run project
 
-Simply open [Lovable](https://lovable.dev/projects/ced2b652-b3be-426b-8912-92bc338b8c77) and click on Share -> Publish.
+```bash
+docker-compose up --build -d
+```
 
-## Can I connect a custom domain to my Lovable project?
+### 4. Setup SSL
 
-Yes, you can!
+```bash
+certbot --nginx -d your-domain.com
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Nginx expects certificates at:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- `/etc/letsencrypt/live/your-domain.com/fullchain.pem`
+- `/etc/letsencrypt/live/your-domain.com/privkey.pem`
+
+Auto-renewal support:
+
+```bash
+certbot renew --dry-run
+```
+
+Run renewal via cron/systemd on the host.
+
+### 5. Access
+
+- https://your-domain.com
+
+### 6. Notes
+
+- Ports `3000` and `8000` are internal-only in Docker.
+- Nginx is the only public entrypoint (`80/443`).
+- `/` and frontend routes -> Next.js service.
+- `/api/*` (except `/api/admin/*` preserved for Next auth proxy) -> FastAPI.
+- `/static/*` -> FastAPI static files (`backend/app/static`).
+
+## Validation Checklist
+
+- Access
+  - Site opens via `https://your-domain.com`.
+- HTTPS
+  - SSL certificate is valid.
+  - No mixed-content warnings in browser console.
+- Routing
+  - Frontend routes render correctly.
+  - API endpoints work under `/api/*`.
+  - Images load from `/static/images/*`.
+- Auth
+  - Admin login/logout works.
+  - `httpOnly` admin cookie remains functional.
+- Docker
+  - All three services (`frontend`, `backend`, `nginx`) are healthy.
