@@ -60,3 +60,4 @@ networks:
 volumes:
   backend_data:
   backend_static:
+
