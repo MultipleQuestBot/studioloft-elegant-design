@@ -1,4 +1,5 @@
 import os
+import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +12,13 @@ from app.db.session import init_db
 
 settings = get_settings()
 
-app = FastAPI(title=settings.app_name)
+logging.basicConfig(
+    level=getattr(logging, settings.log_level.upper(), logging.INFO),
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+logger = logging.getLogger("studioloft.api")
+
+app = FastAPI(title=settings.app_name, debug=settings.debug)
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +41,7 @@ def on_startup() -> None:
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(get_static_images_dir(), exist_ok=True)
     init_db()
+    logger.info("FastAPI startup complete; static dir=%s", str(get_static_dir()))
 
 
 app.mount("/static", StaticFiles(directory=str(get_static_dir())), name="static")

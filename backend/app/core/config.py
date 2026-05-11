@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     )
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 8
+    debug: bool = Field(default=False, validation_alias="DEBUG")
+    log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
 
 
 @lru_cache
